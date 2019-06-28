@@ -1,8 +1,8 @@
 
 # Let's Freeze Tha{t|w}!
 
-[LetsFreezeThat](https://github.com/loveencounterflow/letsfreezethat) is an unapologetically small
-and minimalisitc library to make working with immutable objects in JavaScript less of a chore.
+[LetsFreezeThat](https://github.com/loveencounterflow/letsfreezethat) is an unapologetically minimal library
+to make working with immutable objects in JavaScript less of a chore.
 
 ```
 npm install letsfreezethat
