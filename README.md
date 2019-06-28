@@ -37,7 +37,7 @@ you to improve performance by foregoing `object.freeze()` altogether (something 
 in LetsFreezeThat at a later point in time).
 
 What I wanted was a library so small that performance was probably optimal; turns out 50 LOC is generous
-for a functional subset of `immeer`.
+for a functional subset of `immer`.
 
 
 ## Usage
