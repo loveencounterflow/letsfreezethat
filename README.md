@@ -52,8 +52,8 @@ Where the callback is not given, `lets d` is equivalent to `freeze d` which retu
 properties recursively frozen.
 
 Where the callback *is* given, that's where you can modify a temporary copy of the first argument `d`. I've
-come to always name those copies the same—actually `d` most of the time, but that can be confusing. In short,
-you should think of
+come to always name those copies the same—actually `d` most of the time, but that can be confusing. In
+short, you should think of
 
 ```coffee
 d = lets d, ( d ) -> d.foo = 'baz'
