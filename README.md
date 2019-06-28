@@ -11,15 +11,15 @@ npm install letsfreezethat
 ```coffee
 { lets, freeze, thaw, } = require 'letsfreezethat'
 
-d = lets { foo: 'bar', nested: [ 2, 3, 5, 7, ], }  									 # create object
-e = lets d, ( d ) -> d.nested.push 11																 # modify copy in callback
-console.log 'd                       		', d                       	 # { foo: 'bar', nested: [ 2, 3, 5, 7 ] }
-console.log 'e                       		', e                       	 # { foo: 'bar', nested: [ 2, 3, 5, 7, 11 ] }
-console.log 'd is e                  		', d is e                  	 # false
-console.log 'Object.isFrozen d       		', Object.isFrozen d       	 # true
-console.log 'Object.isFrozen d.nested		', Object.isFrozen d.nested	 # true
-console.log 'Object.isFrozen e       		', Object.isFrozen e       	 # true
-console.log 'Object.isFrozen e.nested		', Object.isFrozen e.nested	 # true
+d = lets { foo: 'bar', nested: [ 2, 3, 5, 7, ], }                    # create object
+e = lets d, ( d ) -> d.nested.push 11                                # modify copy in callback
+console.log 'd                          ', d                         # { foo: 'bar', nested: [ 2, 3, 5, 7 ] }
+console.log 'e                          ', e                         # { foo: 'bar', nested: [ 2, 3, 5, 7, 11 ] }
+console.log 'd is e                     ', d is e                    # false
+console.log 'Object.isFrozen d          ', Object.isFrozen d         # true
+console.log 'Object.isFrozen d.nested   ', Object.isFrozen d.nested  # true
+console.log 'Object.isFrozen e          ', Object.isFrozen e         # true
+console.log 'Object.isFrozen e.nested   ', Object.isFrozen e.nested  # true
 ```
 
 LetsFreezeThat copies the core functionality of [immer](https://github.com/immerjs/immer) (also see
@@ -76,19 +76,19 @@ Observe you can also use `freeze()` and `thaw()` to the same effect:
 
 ```coffee
 { lets
-	freeze
-  thaw } 				= require 'letsfreezethat'
+  freeze
+  thaw }        = require 'letsfreezethat'
 
 ...
 
-original_data		= { key: 'word', value: 'OMG', }
-frozen_data_v1 	= freeze original_data
+original_data   = { key: 'word', value: 'OMG', }
+frozen_data_v1  = freeze original_data
 
 ...
 
-draft						= thaw frozen_data_v1
-draft.size 			= 3
-frozen_data_v2	= freeze draft
+draft           = thaw frozen_data_v1
+draft.size      = 3
+frozen_data_v2  = freeze draft
 
 ...
 
@@ -108,12 +108,12 @@ LetsFreezeThat is around 2.7 times as fast as `immer`, according to my highly sc
   `freeze()`, or `thaw()`; this means that even when you don't manipulate a value, the old reference will
   remain untouched:
 
-	```coffee
-	d = lets d, ( d ) -> # do nothing
-	```
+  ```coffee
+  d = lets d, ( d ) -> # do nothing
+  ```
 
-	This is different from `immer`'s `produce()`, which will give you back the original object in case no
-	modification was made.
+  This is different from `immer`'s `produce()`, which will give you back the original object in case no
+  modification was made.
 
 * LetsFreezeThat does *not* do structural sharing or copy-on-write (COW), nor will it do so in the future.
   Both structural sharing and COW are great techniques to drive down memory requirements, enhance cache
