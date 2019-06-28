@@ -26,7 +26,7 @@ LetsFreezeThat copies the core functionality of [immer](https://github.com/immer
 [here](https://hackernoon.com/introducing-immer-immutability-the-easy-way-9d73d8f71cb3)); the basic
 insight being that
 
-* deeply immutable objects are a great idea for quitre a few reasons;
+* deeply immutable objects are a great idea for quite a few reasons;
 * working with immutable objects—especially to obtain copies with deeply nested updates—can be a pain in
   JavaScript since the language does zilch to support you;
 * JavaScript does have lexical scopes and lightweight function syntax;
@@ -42,7 +42,7 @@ for a functional subset of `immeer`.
 
 ## Usage
 
-you can use the `lets()`, `freeze()` and `thaw()` methods by `require`ing them as in `{ lets, freeze, thaw,
+You can use the `lets()`, `freeze()` and `thaw()` methods by `require`ing them as in `{ lets, freeze, thaw,
 } = require 'letsfreezethat'`, but *probably* you only want `lets()`. `lets()` is similar to `immer`'s
 `produce()`, except simpler.
 
