@@ -56,18 +56,71 @@ come to always name those copies the same—actually `d` most of the time, but t
 short, you should think of
 
 ```coffee
-d = lets d, ( d ) -> d.foo = 'baz'
+d = { key: 'word', value: 'OMG', }
+d = lets d, ( d ) -> d.size = 3
 ```
 
-as if it was written more like this:
+as though it was written more like this:
 
 ```coffee
-frozen_data_v2 = lets frozen_data_v1, ( mutable_copy ) -> mutable_copy.foo = 'baz'
+frozen_data_v1 = lets { key: 'word', value: 'OMG', }
+frozen_data_v2 = lets frozen_data_v1, ( draft ) -> draft.size = 3
 ```
 
-# Performance
+You can also use `freeze()` and `thaw()` to the same effect:
+
+```coffee
+{ lets
+	freeze
+  thaw } 				= require 'letsfreezethat'
+
+...
+
+original_data		= { key: 'word', value: 'OMG', }
+frozen_data_v1 	= freeze original_data
+
+...
+
+draft						= thaw frozen_data_v1
+draft.size 			= 3
+frozen_data_v2	= freeze draft
+
+...
+
+```
+
+This is more explicit but also more repetitive.
+
+
+## Performance
 
 LetsFreezeThat is around 2.7 times as fast as `immer`, according to my highly scientific tests.
+
+
+## What it Does, and What it Doesn't
+
+* LetsFreezeThat always gives back a copy of the value passed in, no matter whether you use `lets()`,
+  `freeze()`, or `thaw()`; this means that even when you don't manipulate a value, the old reference will
+  remain untouched:
+
+	```coffee
+	d = lets d, ( d ) -> # do nothing
+	```
+
+	This is different from `immer`'s `produce()`, which will give you back the original object in case no
+	modification was made.
+
+* LetsFreezeThat does *not* do structural sharing or copy-on-write (COW), nor will it do so in the future.
+  Both structural sharing and COW are great techniques to drive down memory requirements, enhance cache
+  locality and save on garbage collection cycles, but they do come with additional complexities.
+
+  The intended use case for LetsFreezeThat are situations where you have many rather small, rather shallow
+  objects, which offer little opportunity for the benefits of structural sharing and COW to kick in.
+
+* LetsFreezeThat does *not* do track changes; if you need a report on what properties were affected by some
+  part of your program, use `immer` instead. While having a manifest of updates on object structure may be
+  potentially useful when, say, persisting an object to a DB, those benefits will diminish with smaller
+  object size, same as with structural sharing.
 
 
 
