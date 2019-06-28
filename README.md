@@ -52,11 +52,12 @@ Where the callback is not given, `lets d` is equivalent to `freeze d` which retu
 properties recursively frozen.
 
 Where the callback *is* given, that's where you can modify a temporary copy of the first argument `d`. I've
-come to always name those copies the same—actually `d` most of the time, but that can be confusing. In
-short, you should think of
+come to always name those copies the same—`d` most of the time—but that *can* be confusing at first.
+
+You should think of
 
 ```coffee
-d = { key: 'word', value: 'OMG', }
+d = lets { key: 'word', value: 'OMG', }
 d = lets d, ( d ) -> d.size = 3
 ```
 
@@ -67,7 +68,11 @@ frozen_data_v1 = lets { key: 'word', value: 'OMG', }
 frozen_data_v2 = lets frozen_data_v1, ( draft ) -> draft.size = 3
 ```
 
-You can also use `freeze()` and `thaw()` to the same effect:
+The second style has the advantage of being more explicit about the identity of the various values involved;
+also, it is sometimes important to be able to reference back to some property of `frozen_data_v1` after the
+changes, so there's nothing wrong with writing it the more eloquent way.
+
+Observe you can also use `freeze()` and `thaw()` to the same effect:
 
 ```coffee
 { lets
