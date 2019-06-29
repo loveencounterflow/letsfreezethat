@@ -97,9 +97,17 @@ frozen_data_v2  = freeze draft
 This is more explicit but also more repetitive.
 
 
-## Performance
+## Performance And `nofreeze` Option
 
-LetsFreezeThat is around 2.7 times as fast as `immer`, according to my highly scientific tests.
+According to my highly scientific tests, LetsFreezeThat is roughly around 3 times as fast as `immer`. When
+your software works to plan and you made sure you used `'use strict'` so JavaScript would have throw an
+error if you had accidentally tried to modify a frozen value, you can get some extra miles for free by
+replacing `{ lets, freeze, thaw, } = require 'letsfreezethat'` with `{ lets, freeze, thaw, } = ( require
+'letsfreezethat' ).nofreeze`. These methods avoid to call `Object.freeze()` and run about twice as fast as
+the freezing versions: `thaw()` just returns its only argument, making it a no-op; `freeze()` just performs
+a deep copy; `lets()` will likewise make a deep copy, and the value that you can modify in the callback will
+be the return value of the method.
+
 
 
 ## What it Does, and What it Doesn't
@@ -122,10 +130,10 @@ LetsFreezeThat is around 2.7 times as fast as `immer`, according to my highly sc
   The intended use case for LetsFreezeThat are situations where you have many rather small, rather shallow
   objects, which offer little opportunity for the benefits of structural sharing and COW to kick in.
 
-* LetsFreezeThat does *not* do track changes; if you need a report on what properties were affected by some
-  part of your program, use `immer` instead. While having a manifest of updates on object structure may be
-  potentially useful when, say, persisting an object to a DB, those benefits will diminish with smaller
-  object size, same as with structural sharing.
+* LetsFreezeThat does *not* track changes; if you need a report on what properties were affected by some
+  part of your program, use `immer` instead. While having a change manifest may be potentially useful when,
+  say, persisting an object to a DB, those benefits will diminish with smaller object size, same as with
+  structural sharing.
 
 
 
