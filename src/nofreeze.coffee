@@ -33,5 +33,5 @@ lets = ( original, modifier ) ->
   return draft
 
 #-----------------------------------------------------------------------------------------------------------
-module.exports = { lets, freeze, thaw, }
+module.exports = { lets, freeze, thaw, _copy, }
 
