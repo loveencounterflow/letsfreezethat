@@ -25,5 +25,6 @@
   "bugs": {
     "url": "https://github.com/loveencounterflow/letsfreezethat/issues"
   },
-  "homepage": "https://github.com/loveencounterflow/letsfreezethat#readme"
+  "homepage": "https://github.com/loveencounterflow/letsfreezethat#readme",
+  "dependencies": {}
 }
