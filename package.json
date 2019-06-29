@@ -1,6 +1,6 @@
 {
   "name": "letsfreezethat",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "An utterly minimal immutability library in the spirit of immer",
   "main": "lib/main.js",
   "directories": {
