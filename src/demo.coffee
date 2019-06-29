@@ -1,4 +1,6 @@
-{ lets, freeze, thaw, } = require 'letsfreezethat'
+'use strict'
+
+{ lets, freeze, thaw, } = require '..'
 
 d = lets { foo: 'bar', nested: [ 2, 3, 5, 7, ], }
 e = lets d, ( d ) -> d.nested.push 11
