@@ -53,5 +53,14 @@ lets = ( original, modifier ) ->
   return freeze draft
 
 #-----------------------------------------------------------------------------------------------------------
-module.exports = { lets, freeze, thaw, nofreeze: ( require './nofreeze' ), }
+fix = ( target, name, value ) ->
+  Object.defineProperty target, name, {
+    enumerable:     true
+    writable:       false
+    configurable:   false
+    value:          freeze value }
+  return target
+
+#-----------------------------------------------------------------------------------------------------------
+module.exports = { lets, freeze, thaw, fix, nofreeze: ( require './nofreeze' ), }
 

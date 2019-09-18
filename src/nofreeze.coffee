@@ -33,5 +33,14 @@ lets = ( original, modifier ) ->
   return draft
 
 #-----------------------------------------------------------------------------------------------------------
-module.exports = { lets, freeze, thaw, _copy, }
+fix = ( target, name, value ) ->
+  Object.defineProperty target, name, {
+    enumerable:     true
+    writable:       false
+    configurable:   false
+    value:          value }
+  return target
+
+#-----------------------------------------------------------------------------------------------------------
+module.exports = { lets, freeze, thaw, _copy, fix, }
 
