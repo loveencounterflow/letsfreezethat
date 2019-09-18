@@ -16,13 +16,13 @@ console.log 'Object.isFrozen e.nested   ', Object.isFrozen e.nested  # true
 
 d = { foo: 'bar', }
 console.log()
-console.log 'd                          ', d                         # { foo: 'bar', nested: [ 2, 3, 5, 7 ] }
+console.log 'd                          ', d
 fix d, 'sql', { query: "select * from main;", }
-console.log 'd                          ', d                         # { foo: 'bar', nested: [ 2, 3, 5, 7 ] }
+console.log 'd                          ', d
 console.log ( k for k of d )
-try d.sql       = 'other' catch error then console.log error.message
-try d.sql.query = 'other' catch error then console.log error.message
-console.log 'd                          ', d                         # { foo: 'bar', nested: [ 2, 3, 5, 7 ] }
+try d.sql       = 'other' catch error then console.log error.message # Cannot assign to read only property 'sql' of object '#<Object>'
+try d.sql.query = 'other' catch error then console.log error.message # Cannot assign to read only property 'query' of object '#<Object>'
+console.log 'd                          ', d
 
 
 { lets, freeze, thaw, fix, } = ( require '..' ).nofreeze
@@ -41,11 +41,11 @@ console.log 'Object.isFrozen e.nested   ', Object.isFrozen e.nested  # true
 
 d = { foo: 'bar', }
 console.log()
-console.log 'd                          ', d                         # { foo: 'bar', nested: [ 2, 3, 5, 7 ] }
+console.log 'd                          ', d
 fix d, 'sql', { query: "select * from main;", }
-console.log 'd                          ', d                         # { foo: 'bar', nested: [ 2, 3, 5, 7 ] }
+console.log 'd                          ', d
 console.log ( k for k of d )
-try d.sql       = 'other' catch error then console.log error.message
+try d.sql       = {}      catch error then console.log error.message
 try d.sql.query = 'other' catch error then console.log error.message
-console.log 'd                          ', d                         # { foo: 'bar', nested: [ 2, 3, 5, 7 ] }
+console.log 'd                          ', d
 
