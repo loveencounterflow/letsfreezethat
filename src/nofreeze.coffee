@@ -34,11 +34,7 @@ lets = ( original, modifier ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 fix = ( target, name, value ) ->
-  Object.defineProperty target, name, {
-    enumerable:     true
-    writable:       false
-    configurable:   false
-    value:          value }
+  target[ name ] = value
   return target
 
 #-----------------------------------------------------------------------------------------------------------
