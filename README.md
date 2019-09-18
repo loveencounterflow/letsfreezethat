@@ -39,6 +39,35 @@ in LetsFreezeThat at a later point in time).
 What I wanted was a library so small that performance was probably optimal; turns out 50 LOC is generous
 for a functional subset of `immer`.
 
+## Let's `fix()` That!
+
+As of version 2, there's also a `fix()` method that allows to hammer down a particular attribute of
+a given target object:
+
+```
+{ fix, } = require 'letsfreezethat'
+d = { foo: 'bar', }
+fix d, 'sql', { query: "select * from main;", }
+console.log ( k for k of d ) # [ 'foo', 'sql' ]
+try d.sql       = 'other' catch error then console.log error.message # Cannot assign to read only property 'sql' of object '#<Object>'
+try d.sql.query = 'other' catch error then console.log error.message # Cannot assign to read only property 'query' of object '#<Object>'
+```
+
+`fix()` takes three arguments: the `target` object, a `name`, and a `value`. After calling `fix target,
+name, value`, `target[ name ]` will equal `value`, as if one had used assignment, as in `target[ name ] =
+value`. However, the attribute will be tacked onto `target` using `Object.defineProperty` with a descriptor
+`{ enumerable: true, writable: false, configurable: false, value: ( freeze value ), }`, so it cannot (in
+strict mode) be altered itself (because it is frozen), nor can `target[ name ]` be re-assigned or modified
+(because it is not writable and not configurable).
+
+Thus, `fix()` covers a middle ground between all-out freezing and having everything mutable, all the time.
+It is suitable for those situation where some parts of a given state object have to remain updatable when
+other parts are not meant to be fiddled with.
+
+Observe that the `nofreeze` version of `fix()` uses plain assignment and no attribute configuration, so
+`nofreeze.fix target, name, value` is just a fancy way of writing `target[ name ] = value`. This detail may
+change in the future.
+
 
 ## Usage
 
