@@ -107,17 +107,18 @@ type_of = ( x ) -> ( ( Object::toString.call x ).replace /^\[object ([^\]]+)\]$/
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "use partial freezing (3/3)" ] = ->
-  { lets, freeze, thaw, fix, } = ( require '..' ).partial
+  { lets, freeze, thaw, fix, lets_compute, } = ( require '..' ).partial
   # log '^!!!!!!!!!!!!!!!!!!!!!!!!!!^'; return
   #.........................................................................................................
   counter = 0
   d       = lets { foo: 'bar', nested: [ 2, 3, 5, 7, ], }
   e       = lets d, ( d ) -> d.nested.push 11
-  d       = lets d, ( d ) -> Object.defineProperty d, 'count',
-    enumerable:     true
-    configurable:   false
-    get:            -> ++counter
-    set:            ( value ) -> counter = value
+  d       = lets_compute d, 'count', ( -> ++counter ), ( ( x ) -> counter = x )
+  # d       = lets d, ( d ) -> Object.defineProperty d, 'count',
+  #   enumerable:     true
+  #   configurable:   false
+  #   get:            -> ++counter
+  #   set:            ( value ) -> counter = value
   assert.ok ( ( type_of ( Object.getOwnPropertyDescriptor d, 'count' ).set ) is 'function' ),   '^lft@139^'
   assert.ok ( Object.isSealed d ),                                                              '^lft@140^'
   assert.deepEqual ( Object.keys d ), [ 'foo', 'nested', 'count', ],                            '^lft@141^'

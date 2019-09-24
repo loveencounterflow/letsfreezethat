@@ -65,6 +65,16 @@ lets = ( original, modifier ) ->
   return freeze draft
 
 #-----------------------------------------------------------------------------------------------------------
+lets_compute = ( original, name, get, set = null ) ->
+  unless ( type = typeof get ) is 'function'
+    throw new Error "µ77631 expected a function, got a #{type}"
+  unless ( not set )? or ( type = typeof set ) is 'function'
+    throw new Error "µ77631 expected a function, got a #{type}"
+  draft = thaw original
+  Object.defineProperty draft, name, { enumerable: true, configurable: false, get, set, }
+  return freeze draft
+
+#-----------------------------------------------------------------------------------------------------------
 fix = ( target, name, value ) ->
   Object.defineProperty target, name, {
     enumerable:     true
@@ -75,7 +85,7 @@ fix = ( target, name, value ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 module.exports = {
-  lets, freeze, thaw, fix,
+  lets, freeze, thaw, fix, lets_compute,
   nofreeze: ( require './nofreeze' ),
   partial: ( require './partial' ), }
 
