@@ -1,6 +1,8 @@
 
 'use strict'
 
+#-----------------------------------------------------------------------------------------------------------
+{ type_of, } = require './helpers'
 
 #-----------------------------------------------------------------------------------------------------------
 freeze = ( x ) ->
@@ -30,12 +32,13 @@ _freeze = ( x ) ->
   if Array.isArray x
     return Object.seal ( ( _freeze value ) for value in x )
   #.........................................................................................................
-  if typeof x is 'object'
+  if ( type_of x ) is 'object'
     R = {}
     for key, descriptor of Object.getOwnPropertyDescriptors x
       if _is_computed descriptor
         Object.defineProperty R, key, descriptor
       else
+        ### TAINT must recurse into object ###
         if Array.isArray descriptor.value
           descriptor.value = _freeze descriptor.value
         descriptor.configurable = false
@@ -69,11 +72,11 @@ lets_compute = ( original, name, get = null, set = null ) ->
   draft = thaw original
   descriptor      = { enumerable: true, configurable: false, }
   if get?
-    unless ( type = typeof get ) is 'function'
+    unless ( type = type_of get ) is 'function'
       throw new Error "µ77631 expected a function, got a #{type}"
     descriptor.get  = get
   if set?
-    unless ( not set )? or ( type = typeof set ) is 'function'
+    unless ( not set )? or ( type = type_of set ) is 'function'
       throw new Error "µ77631 expected a function, got a #{type}"
     descriptor.set  = set
   if ( not get? ) and ( not set? )
