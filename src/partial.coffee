@@ -54,9 +54,17 @@ _thaw = ( x ) ->
   if Array.isArray x
     return ( ( _thaw value ) for value in x )
   #.........................................................................................................
-  if typeof x is 'object'
+  if ( type_of x ) is 'object'
     R = {}
-    R[ key ] = _thaw value for key, value of x
+    for key, descriptor of Object.getOwnPropertyDescriptors x
+      if _is_computed descriptor
+        Object.defineProperty R, key, descriptor
+      else
+        if Array.isArray descriptor.value
+          descriptor.value = _thaw descriptor.value
+        descriptor.configurable = true
+        descriptor.writable     = true
+        Object.defineProperty R, key, descriptor
     return R
   #.........................................................................................................
   return x
