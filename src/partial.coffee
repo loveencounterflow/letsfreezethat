@@ -66,12 +66,17 @@ lets = ( original, modifier ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 lets_compute = ( original, name, get, set = null ) ->
-  unless ( type = typeof get ) is 'function'
-    throw new Error "µ77631 expected a function, got a #{type}"
-  unless ( not set )? or ( type = typeof set ) is 'function'
-    throw new Error "µ77631 expected a function, got a #{type}"
   draft = thaw original
-  Object.defineProperty draft, name, { enumerable: true, configurable: false, get, set, }
+  descriptor      = { enumerable: true, configurable: false, }
+  if get?
+    unless ( type = typeof get ) is 'function'
+      throw new Error "µ77631 expected a function, got a #{type}"
+    descriptor.get  = get
+  if set?
+    unless ( not set )? or ( type = typeof set ) is 'function'
+      throw new Error "µ77631 expected a function, got a #{type}"
+    descriptor.set  = set
+  Object.defineProperty draft, name, descriptor
   return freeze draft
 
 #-----------------------------------------------------------------------------------------------------------

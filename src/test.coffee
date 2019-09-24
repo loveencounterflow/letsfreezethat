@@ -130,6 +130,32 @@ type_of = ( x ) -> ( ( Object::toString.call x ).replace /^\[object ([^\]]+)\]$/
   assert.throws ( -> d.foo  = 'other' ), { message: /Cannot assign to read only property/,                }, '^lft@147^'
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "may pass in null as getter, setter" ] = ->
+  { lets, lets_compute, } = ( require '..' ).partial
+  # log '^!!!!!!!!!!!!!!!!!!!!!!!!!!^'; return
+  #.........................................................................................................
+  counter = 0
+  d       = lets { foo: 'bar', }
+  d       = lets_compute d, 'count', ( -> ++counter )
+  assert.ok ( d.count is 1                  ), '^lft@148^'
+  assert.ok ( d.count is 2                  ), '^lft@149^'
+  #.........................................................................................................
+  counter = 0
+  d       = lets { foo: 'bar', }
+  d       = lets_compute d, 'count', ( -> ++counter ), null
+  assert.ok ( d.count is 1                  ), '^lft@150^'
+  assert.ok ( d.count is 2                  ), '^lft@151^'
+  #.........................................................................................................
+  counter = 0
+  d       = lets { foo: 'bar', }
+  d       = lets_compute d, 'count', null, ( -> ++counter )
+  d.count = 42
+  assert.ok ( counter is 1                  ), '^lft@152^'
+  d.count = 'foo'
+  assert.ok ( counter is 2                  ), '^lft@153^'
+  assert.ok ( d.count is undefined          ), '^lft@154^'
+
 
 ############################################################################################################
 if require.main is module then do =>
