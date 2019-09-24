@@ -165,6 +165,79 @@ be the return value of the method.
   structural sharing.
 
 
+## Partial Freezing (Experimental)
+
+> “[...] when there are disputes among persons, we can simply say: Let's compute!, without further ado, to
+> see who is right”—Gottfried Wilhelm Leibniz, 1685
+
+It is sometimes desirable to freeze as many properties of a given object and still keep some properties in a
+mutable state; this is often the case when custom objects wrap objects from libraries one has no control
+over. For example, I recently ran into that conundrum when writing a library that accepts an object
+representing a database and some configuration in order to read from and write to the DB. That library will
+construct an object `{ foo: 42, bar: [...], db, }` to represent both the configuration and the DB instance;
+naturally, I would very much like to freeze the configurational part of that object, but I can't do that
+with that 3rd-party DB object.
+
+This is where `(require 'letsfreezethat' ).partial` comes in. It offers the same methods as the standard
+version of LetsFreezeThat, but they are implemented (with `Object.seal()`) in such a way that *dynamic
+properties that use getters and/or setters will not be frozen*. Such properties can be defined by
+JavaScript's `Object.defineProperty()` method; because that is a bit cumbersome, LetsFreezeThat/partial
+implements a method
+
+```coffee
+lets_compute = ( original, name, get, set = null ) -> ...
+```
+
+to simplify the process.
+
+As a trivial example, let's define a dynamic property `time` to always reflect
+the current time in milliseconds; first the approach that won't work:
+
+```coffee
+d = { foo: 'bar', }
+Object.defineProperty d, 'time', { get: ( -> Date.now() ), }
+d.time # 1569337726
+...
+d.time # 1569337738
+```
+
+OK, great. But when you `d = freeze d`, then that `time` attribute gets frozen, too:
+
+```coffee
+{ freeze, } = require 'letsfreezethat'
+d = freeze d
+d.time # 1569337742
+...
+d.time # 1569337742
+...
+d.time # 1569337742
+```
+
+To make this work as intended, use LetsFreezeThat/partial:
+
+```coffee
+{ freeze, } = ( require 'letsfreezethat' ).partial
+d = freeze d
+d.time # 1569337742
+...
+d.time # 1569337744
+...
+d.time # 1569337900
+```
+
+Here is
+
+```coffee
+{ lets, lets_compute, } = ( require 'letsfreezethat' ).partial
+d = lets { foo: 'bar', }                        # d.foo can't be changed, can't add attributes to d
+d = lets_compute d, 'time', ( -> Date.now() )   # as above, but time keeps changing:
+d.time # 1569337742
+...
+d.time # 1569337744
+```
+
+
+
 
 
 
