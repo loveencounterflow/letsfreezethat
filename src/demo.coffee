@@ -1,5 +1,5 @@
 'use strict'
-
+log = console.log
 { lets, freeze, thaw, fix, } = require '..'
 
 d = lets { foo: 'bar', nested: [ 2, 3, 5, 7, ], }
@@ -48,4 +48,32 @@ console.log ( k for k of d )
 try d.sql       = {}      catch error then console.log error.message
 try d.sql.query = 'other' catch error then console.log error.message
 console.log 'd                          ', d
+
+log '--------------------------------------------------------------------'
+{ lets, freeze, thaw, fix, } = require '..'
+d = { x: 'some value', }
+Object.defineProperty d, 'time',
+  enumerable:     true
+  configurable:   false
+  get:            -> process.hrtime()
+  set:            -> log 'set not implemented'
+
+log '^887-1', d
+log '^887-2', d.time
+log '^887-3', d.time
+# d.x     = 'some other value'
+d.time  = 42
+log 'Object.getOwnPropertyDescriptor', Object.getOwnPropertyDescriptor d, 'time'
+log '--------------------------------------------------------------------'
+d       = lets d
+# log '^335-1', Object.isFrozen d
+Object.freeze d
+log 'Object.getOwnPropertyDescriptor', Object.getOwnPropertyDescriptor d, 'time'
+log '^887-4', d
+log '^887-5', d.time
+log '^887-6', d.time
+# d.x     = 'some third value'
+# d.time  = 42
+log '^887-7', d
+log '^887-8', d.time
 
