@@ -62,5 +62,8 @@ fix = ( target, name, value ) ->
   return target
 
 #-----------------------------------------------------------------------------------------------------------
-module.exports = { lets, freeze, thaw, fix, nofreeze: ( require './nofreeze' ), }
+module.exports = {
+  lets, freeze, thaw, fix,
+  nofreeze: ( require './nofreeze' ),
+  partial: ( require './partial' ), }
 
