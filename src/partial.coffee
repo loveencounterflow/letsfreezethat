@@ -65,7 +65,7 @@ lets = ( original, modifier ) ->
   return freeze draft
 
 #-----------------------------------------------------------------------------------------------------------
-lets_compute = ( original, name, get, set = null ) ->
+lets_compute = ( original, name, get = null, set = null ) ->
   draft = thaw original
   descriptor      = { enumerable: true, configurable: false, }
   if get?
@@ -76,6 +76,8 @@ lets_compute = ( original, name, get, set = null ) ->
     unless ( not set )? or ( type = typeof set ) is 'function'
       throw new Error "µ77631 expected a function, got a #{type}"
     descriptor.set  = set
+  if ( not get? ) and ( not set? )
+    throw new Error "µ79825 must define getter or setter"
   Object.defineProperty draft, name, descriptor
   return freeze draft
 

@@ -150,11 +150,10 @@ type_of = ( x ) -> ( ( Object::toString.call x ).replace /^\[object ([^\]]+)\]$/
   counter = 0
   d       = lets { foo: 'bar', }
   d       = lets_compute d, 'count', null, ( -> ++counter )
-  d.count = 42
-  assert.ok ( counter is 1                  ), '^lft@152^'
-  d.count = 'foo'
-  assert.ok ( counter is 2                  ), '^lft@153^'
-  assert.ok ( d.count is undefined          ), '^lft@154^'
+  #.........................................................................................................
+  counter = 0
+  d       = lets { foo: 'bar', }
+  assert.throws ( -> lets_compute d, 'count', null, null ), /must define getter or setter/, '^lft@152^'
 
 
 ############################################################################################################
