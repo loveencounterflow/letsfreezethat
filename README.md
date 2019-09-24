@@ -170,13 +170,15 @@ be the return value of the method.
 > “[...] when there are disputes among persons, we can simply say: Let's compute!, without further ado, to
 > see who is right”—Gottfried Wilhelm Leibniz, 1685
 
-It is sometimes desirable to freeze as many properties of a given object and still keep some properties in a
-mutable state; this is often the case when custom objects wrap objects from libraries one has no control
-over. For example, I recently ran into that conundrum when writing a library that accepts an object
-representing a database and some configuration in order to read from and write to the DB. That library will
-construct an object `{ foo: 42, bar: [...], db, }` to represent both the configuration and the DB instance;
-naturally, I would very much like to freeze the configurational part of that object, but I can't do that
-with that 3rd-party DB object.
+It is sometimes desirable to freeze as many properties of a given object as possible and still keep some
+properties in a mutable state; this is often the case when a custom object contains other objects from
+libraries one has no control over.
+
+For example, I recently ran into that conundrum when writing a library that accepts an object representing a
+database and some configuration in order to read from and write to the DB. That library will construct an
+object `{ foo: 42, bar: [...], db, }` to represent both the configuration and the DB instance; naturally, I
+would very much like to freeze the configurational part of that object, but I can't do that with that
+3rd-party DB instance which might rely on being mutable.
 
 This is where `(require 'letsfreezethat' ).partial` comes in. It offers the same methods as the standard
 version of LetsFreezeThat, but they are implemented (with `Object.seal()`) in such a way that *dynamic
@@ -225,7 +227,7 @@ d.time # 1569337744
 d.time # 1569337900
 ```
 
-Here is
+Here is how one would typically use partial freezing and `lets_compute()`:
 
 ```coffee
 { lets, lets_compute, } = ( require 'letsfreezethat' ).partial
