@@ -28,15 +28,19 @@ _is_computed = ( descriptor ) ->
 _freeze = ( x ) ->
   #.........................................................................................................
   if Array.isArray x
-    return Object.freeze ( ( _freeze value ) for value in x )
+    return Object.seal ( ( _freeze value ) for value in x )
   #.........................................................................................................
   if typeof x is 'object'
     R = {}
     for key, descriptor of Object.getOwnPropertyDescriptors x
       if _is_computed descriptor
-        Object.defineProperty d, key, descriptor
+        Object.defineProperty R, key, descriptor
       else
-        R[ key ] = _freeze value
+        if Array.isArray descriptor.value
+          descriptor.value = _freeze descriptor.value
+        descriptor.configurable = false
+        descriptor.writable     = false
+        Object.defineProperty R, key, descriptor
     return Object.seal R
   #.........................................................................................................
   return x
