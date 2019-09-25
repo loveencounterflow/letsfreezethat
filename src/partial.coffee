@@ -70,26 +70,6 @@ _thaw = ( x ) ->
   #.........................................................................................................
   return x
 
-
-  # #.........................................................................................................
-  # if Array.isArray x
-  #   return ( ( _thaw value ) for value in x )
-  # #.........................................................................................................
-  # if ( type_of x ) is 'object'
-  #   R = {}
-  #   for key, descriptor of Object.getOwnPropertyDescriptors x
-  #     if is_descriptor_of_computed_value descriptor
-  #       Object.defineProperty R, key, descriptor
-  #     else
-  #       if Array.isArray descriptor.value
-  #         descriptor.value = _thaw descriptor.value
-  #       descriptor.configurable = true
-  #       descriptor.writable     = true
-  #       Object.defineProperty R, key, descriptor
-  #   return R
-  # #.........................................................................................................
-  # return x
-
 #-----------------------------------------------------------------------------------------------------------
 lets = ( original, modifier ) ->
   draft = thaw original
@@ -99,7 +79,7 @@ lets = ( original, modifier ) ->
 #-----------------------------------------------------------------------------------------------------------
 lets_compute = ( original, key, get = null, set = null ) ->
   draft = thaw original
-  set_computed_value original, key, get, set
+  set_computed_value draft, key, get, set
   return freeze draft
 
 #-----------------------------------------------------------------------------------------------------------
