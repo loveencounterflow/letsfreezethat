@@ -190,117 +190,116 @@ log                       = console.log
   assert.throws ( -> d.blah = 'other' ), { message: /Cannot add property blah, object is not extensible/, }, '^lft@84^'
   assert.throws ( -> d.foo  = 'other' ), { message: /Cannot assign to read only property/,                }, '^lft@85^'
   return null
-  # log '^7662^'; return
 
-# #-----------------------------------------------------------------------------------------------------------
-# @[ "may pass in null to lets_compute as getter, setter" ] = ->
-#   { lets, lets_compute, } = ( require '..' ).partial
-#   # log '^!!!!!!!!!!!!!!!!!!!!!!!!!!^'; return
-#   #.........................................................................................................
-#   counter = 0
-#   d       = lets { foo: 'bar', }
-#   d       = lets_compute d, 'count', ( -> ++counter )
-#   assert.ok ( d.count is 1                  ), '^lft@95^'
-#   assert.ok ( d.count is 2                  ), '^lft@96^'
-#   #.........................................................................................................
-#   counter = 0
-#   d       = lets { foo: 'bar', }
-#   d       = lets_compute d, 'count', ( -> ++counter ), null
-#   assert.ok ( d.count is 1                  ), '^lft@97^'
-#   assert.ok ( d.count is 2                  ), '^lft@98^'
-#   #.........................................................................................................
-#   counter = 0
-#   d       = lets { foo: 'bar', }
-#   d       = lets_compute d, 'count', null, ( -> ++counter )
-#   #.........................................................................................................
-#   counter = 0
-#   d       = lets { foo: 'bar', }
-#   assert.throws ( -> lets_compute d, 'count', null, null ), /must define getter or setter/, '^lft@99^'
+#-----------------------------------------------------------------------------------------------------------
+@[ "may pass in null to lets_compute as getter, setter" ] = ->
+  { lets, lets_compute, } = ( require '..' ).partial
+  # log '^!!!!!!!!!!!!!!!!!!!!!!!!!!^'; return
+  #.........................................................................................................
+  counter = 0
+  d       = lets { foo: 'bar', }
+  d       = lets_compute d, 'count', ( -> ++counter )
+  assert.ok ( d.count is 1                  ), '^lft@95^'
+  assert.ok ( d.count is 2                  ), '^lft@96^'
+  #.........................................................................................................
+  counter = 0
+  d       = lets { foo: 'bar', }
+  d       = lets_compute d, 'count', ( -> ++counter ), null
+  assert.ok ( d.count is 1                  ), '^lft@97^'
+  assert.ok ( d.count is 2                  ), '^lft@98^'
+  #.........................................................................................................
+  counter = 0
+  d       = lets { foo: 'bar', }
+  d       = lets_compute d, 'count', null, ( -> ++counter )
+  #.........................................................................................................
+  counter = 0
+  d       = lets { foo: 'bar', }
+  assert.throws ( -> lets_compute d, 'count', null, null ), /must define getter or setter/, '^lft@99^'
 
-# #-----------------------------------------------------------------------------------------------------------
-# @[ "lets_compute keeps object identity" ] = ->
-#   { lets, freeze, thaw, lets_compute, } = ( require '..' ).partial
-#   #.........................................................................................................
-#   class Otherclass
-#     constructor: ->
-#       @this_is_otherclass = true
-#     g: -> ( 'Otherclass.' + k for k of @ )
-#   #.........................................................................................................
-#   class Someclass extends Otherclass
-#     constructor: ->
-#       super()
-#       @this_is_someclass = true
-#     f: -> ( 'Someclass.' + k for k of @ )
-#   #.........................................................................................................
-#   test_something_ok = ( x, n ) ->
-#     tests = [
-#       -> assert.ok ( ( ( require 'util' ).inspect x ).startsWith 'Someclass' ), '^lft@100^' + "(##{n})"
-#       -> assert.deepEqual ( Object.getOwnPropertyNames x ), [ 'this_is_otherclass', 'this_is_someclass' ], '^lft@101 + "(##{n})"
-#       -> assert.ok     x.hasOwnProperty 'this_is_otherclass',  '^lft@102 + "(##{n})"
-#       -> assert.ok     x.hasOwnProperty 'this_is_someclass',   '^lft@103 + "(##{n})"
-#       -> assert.ok not x.hasOwnProperty 'f',                   '^lft@104 + "(##{n})"
-#       -> assert.ok not x.hasOwnProperty 'g',                   '^lft@105 + "(##{n})"
-#       -> assert.deepEqual x.g(), [ 'Otherclass.this_is_otherclass', 'Otherclass.this_is_someclass' ], '^lft@106 + "(##{n})"
-#       -> assert.deepEqual x.f(), [ 'Someclass.this_is_otherclass', 'Someclass.this_is_someclass' ], '^lft@107 + "(##{n})"
-#       ]
-#     error_count = 0
-#     for test, idx in tests
-#       # log test.toString()
-#       try
-#         test()
-#       catch error
-#         error_count++
-#         log '^lft@108, "ERROR:", error.message
-#     if error_count > 0
-#       assert.ok false, "^lft@86^(##{n}) #{error_count} tests failed"
-#     return null
-#   #.........................................................................................................
-#   tests = [
-#     #.......................................................................................................
-#     ->
-#       something = new Someclass
-#       test_something_ok something, '1'
-#     #.......................................................................................................
-#     ->
-#       something = new Someclass
-#       d = lets {}
-#       d = lets_compute d, 'something', ( -> something )
-#       test_something_ok d.something, '2'
-#     #.......................................................................................................
-#     ->
-#       something = new Someclass
-#       d = lets {}
-#       d = lets_compute d, 'something', ( -> something )
-#       d = freeze d
-#       test_something_ok d.something, '3'
-#     #.......................................................................................................
-#     ->
-#       something = new Someclass
-#       d = lets {}
-#       d = lets_compute d, 'something', ( -> something )
-#       d = thaw d
-#       test_something_ok d.something, '4'
-#     #.......................................................................................................
-#     ->
-#       something = new Someclass
-#       d = lets {}
-#       d = lets_compute d, 'something', ( -> something )
-#       d = lets d, ( d ) -> d.other = 42
-#       test_something_ok d.something, '5'
-#     ]
-#   #.........................................................................................................
-#   do =>
-#     error_count = 0
-#     for test in tests
-#       try
-#         test()
-#       catch error
-#         error_count++
-#         log '^lft@109, "ERROR:", error.message
-#     if error_count > 0
-#       assert.ok false, "^lft@88^ #{error_count} tests failed"
-#     return null
-#   return null
+#-----------------------------------------------------------------------------------------------------------
+@[ "lets_compute keeps object identity" ] = ->
+  { lets, freeze, thaw, lets_compute, } = ( require '..' ).partial
+  #.........................................................................................................
+  class Otherclass
+    constructor: ->
+      @this_is_otherclass = true
+    g: -> ( 'Otherclass.' + k for k of @ )
+  #.........................................................................................................
+  class Someclass extends Otherclass
+    constructor: ->
+      super()
+      @this_is_someclass = true
+    f: -> ( 'Someclass.' + k for k of @ )
+  #.........................................................................................................
+  test_something_ok = ( x, n ) ->
+    tests = [
+      -> assert.ok ( ( ( require 'util' ).inspect x ).startsWith 'Someclass' ), '^lft@100^' + "(##{n})"
+      -> assert.deepEqual ( Object.getOwnPropertyNames x ), [ 'this_is_otherclass', 'this_is_someclass' ], '^lft@101^' + "(##{n})"
+      -> assert.ok     x.hasOwnProperty 'this_is_otherclass',  '^lft@102^' + "(##{n})"
+      -> assert.ok     x.hasOwnProperty 'this_is_someclass',   '^lft@103^' + "(##{n})"
+      -> assert.ok not x.hasOwnProperty 'f',                   '^lft@104^' + "(##{n})"
+      -> assert.ok not x.hasOwnProperty 'g',                   '^lft@105^' + "(##{n})"
+      -> assert.deepEqual x.g(), [ 'Otherclass.this_is_otherclass', 'Otherclass.this_is_someclass' ], '^lft@106^' + "(##{n})"
+      -> assert.deepEqual x.f(), [ 'Someclass.this_is_otherclass', 'Someclass.this_is_someclass' ], '^lft@107^' + "(##{n})"
+      ]
+    error_count = 0
+    for test, idx in tests
+      # log test.toString()
+      try
+        test()
+      catch error
+        error_count++
+        log '^lft@108^', "ERROR:", error.message
+    if error_count > 0
+      assert.ok false, "^lft@86^(##{n}) #{error_count} tests failed"
+    return null
+  #.........................................................................................................
+  tests = [
+    #.......................................................................................................
+    ->
+      something = new Someclass
+      test_something_ok something, '1'
+    #.......................................................................................................
+    ->
+      something = new Someclass
+      d = lets {}
+      d = lets_compute d, 'something', ( -> something )
+      test_something_ok d.something, '2'
+    #.......................................................................................................
+    ->
+      something = new Someclass
+      d = lets {}
+      d = lets_compute d, 'something', ( -> something )
+      d = freeze d
+      test_something_ok d.something, '3'
+    #.......................................................................................................
+    ->
+      something = new Someclass
+      d = lets {}
+      d = lets_compute d, 'something', ( -> something )
+      d = thaw d
+      test_something_ok d.something, '4'
+    #.......................................................................................................
+    ->
+      something = new Someclass
+      d = lets {}
+      d = lets_compute d, 'something', ( -> something )
+      d = lets d, ( d ) -> d.other = 42
+      test_something_ok d.something, '5'
+    ]
+  #.........................................................................................................
+  do =>
+    error_count = 0
+    for test in tests
+      try
+        test()
+      catch error
+        error_count++
+        log '^lft@109^', "ERROR:", error.message
+    if error_count > 0
+      assert.ok false, "^lft@88^ #{error_count} tests failed"
+    return null
+  return null
 
 
 ############################################################################################################
