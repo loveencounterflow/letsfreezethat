@@ -36,7 +36,9 @@
   if type_of_set?
     throw new Error "^lft@h3^ expected a function, got a #{type}" unless type_of_set is 'function'
     descriptor.set = set
-  Object.defineProperty draft, name, descriptor
+  Object.defineProperty d, key, descriptor
 
+############################################################################################################
+do => @[ k ] = v.bind @ for k, v of @
 
 
