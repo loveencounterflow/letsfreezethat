@@ -86,114 +86,111 @@ log                       = console.log
   assert.ok ( Object.isSealed d.nested      ), '^lft@36^'
   assert.ok ( Object.isSealed d.u           ), '^lft@37^'
   assert.ok ( Object.isSealed d.u.v         ), '^lft@38^'
-  assert.ok ( Object.isSealed d.u.v.w       ), '^lft@39^'
-  assert.ok ( Object.isSealed e             ), '^lft@40^'
-  assert.ok ( Object.isSealed e.nested      ), '^lft@41^'
-  assert.ok ( Object.isSealed e.u           ), '^lft@42^'
-  assert.ok ( Object.isSealed e.u.v         ), '^lft@43^'
-  assert.ok ( Object.isSealed e.u.v.w       ), '^lft@44^'
-  assert.throws ( -> d.nested.push 'other' ), { message: /Cannot add property/,             }, '^lft@45^'
-  assert.throws ( -> d.foo  = 'other' ), { message: /Cannot assign to read only property/,  }, '^lft@46^'
-  assert.throws ( -> d.blah = 'other' ), { message: /Cannot add property/,                  }, '^lft@47^'
+  assert.ok ( Object.isSealed e             ), '^lft@39^'
+  assert.ok ( Object.isSealed e.nested      ), '^lft@40^'
+  assert.ok ( Object.isSealed e.u           ), '^lft@41^'
+  assert.ok ( Object.isSealed e.u.v         ), '^lft@42^'
+  assert.throws ( -> d.nested.push 'other' ), { message: /Cannot add property/,             }, '^lft@43^'
+  assert.throws ( -> d.foo  = 'other' ), { message: /Cannot assign to read only property/,  }, '^lft@44^'
+  assert.throws ( -> d.blah = 'other' ), { message: /Cannot add property/,                  }, '^lft@45^'
   #.........................................................................................................
   d2 = lets d, ( d_copy ) ->
-    assert.ok ( d isnt d_copy ),  '^lft@48^'
-    assert.ok ( not is_readonly d_copy,      'nested'  ), '^lft@49^'
-    assert.ok ( not is_readonly d_copy,      'u'       ), '^lft@50^'
-    assert.ok ( not is_readonly d_copy.u,    'v'       ), '^lft@51^'
-    assert.ok ( not is_readonly d_copy.u.v,  'w'       ), '^lft@52^'
-    assert.ok ( not Object.isSealed d_copy             ), '^lft@53^'
-    assert.ok ( not Object.isSealed d_copy.nested      ), '^lft@54^'
-    assert.ok ( not Object.isSealed d_copy.u           ), '^lft@55^'
-    assert.ok ( not Object.isSealed d_copy.u.v         ), '^lft@56^'
-    try d_copy.nested.push 'other' catch e then throw new Error '^lft@57^ ' + e.message
-    try d_copy.foo  = 'other'      catch e then throw new Error '^lft@58^ ' + e.message
-    try d_copy.blah = 'other'      catch e then throw new Error '^lft@59^ ' + e.message
-    try d_copy.u.v.w = 'other'     catch e then throw new Error '^lft@60^ ' + e.message
-  assert.ok ( d2 isnt d ), '^lft@61^'
-  assert.deepEqual d,  matcher_a,               '^lft@62^'
-  assert.deepEqual d2, matcher_c,               '^lft@63^'
+    assert.ok ( d isnt d_copy ),  '^lft@46^'
+    assert.ok ( not is_readonly d_copy,      'nested'  ), '^lft@47^'
+    assert.ok ( not is_readonly d_copy,      'u'       ), '^lft@48^'
+    assert.ok ( not is_readonly d_copy.u,    'v'       ), '^lft@49^'
+    assert.ok ( not is_readonly d_copy.u.v,  'w'       ), '^lft@50^'
+    assert.ok ( not Object.isSealed d_copy             ), '^lft@51^'
+    assert.ok ( not Object.isSealed d_copy.nested      ), '^lft@52^'
+    assert.ok ( not Object.isSealed d_copy.u           ), '^lft@53^'
+    assert.ok ( not Object.isSealed d_copy.u.v         ), '^lft@54^'
+    try d_copy.nested.push 'other' catch e then throw new Error '^lft@55^ ' + e.message
+    try d_copy.foo  = 'other'      catch e then throw new Error '^lft@56^ ' + e.message
+    try d_copy.blah = 'other'      catch e then throw new Error '^lft@57^ ' + e.message
+    try d_copy.u.v.w = 'other'     catch e then throw new Error '^lft@58^ ' + e.message
+  assert.ok ( d2 isnt d ), '^lft@59^'
+  assert.deepEqual d,  matcher_a,               '^lft@60^'
+  assert.deepEqual d2, matcher_c,               '^lft@61^'
   #.........................................................................................................
   d_thawed = thaw d
-  assert.deepEqual d_thawed, d,                           '^lft@64^'
-  assert.ok ( d isnt d_thawed ),                          '^lft@65^'
-  assert.ok ( not is_readonly d_thawed,      'nested'  ), '^lft@66^'
-  assert.ok ( not is_readonly d_thawed,      'u'       ), '^lft@67^'
-  assert.ok ( not is_readonly d_thawed.u,    'v'       ), '^lft@68^'
-  assert.ok ( not is_readonly d_thawed.u.v,  'w'       ), '^lft@69^'
-  assert.ok ( not Object.isSealed d_thawed             ), '^lft@70^'
-  assert.ok ( not Object.isSealed d_thawed.nested      ), '^lft@71^'
-  assert.ok ( not Object.isSealed d_thawed.u           ), '^lft@72^'
-  assert.ok ( not Object.isSealed d_thawed.u.v         ), '^lft@73^'
-  try d_thawed.nested.push 'other' catch e then throw new Error '^lft@74^ ' + e.message
-  try d_thawed.foo  = 'other'      catch e then throw new Error '^lft@75^ ' + e.message
-  try d_thawed.blah = 'other'      catch e then throw new Error '^lft@76^ ' + e.message
-  try d_thawed.u.v.w = 'other'     catch e then throw new Error '^lft@77^ ' + e.message
-  assert.deepEqual d_thawed, matcher_c,               '^lft@78^'
+  assert.deepEqual d_thawed, d,                           '^lft@62^'
+  assert.ok ( d isnt d_thawed ),                          '^lft@63^'
+  assert.ok ( not is_readonly d_thawed,      'nested'  ), '^lft@64^'
+  assert.ok ( not is_readonly d_thawed,      'u'       ), '^lft@65^'
+  assert.ok ( not is_readonly d_thawed.u,    'v'       ), '^lft@66^'
+  assert.ok ( not is_readonly d_thawed.u.v,  'w'       ), '^lft@67^'
+  assert.ok ( not Object.isSealed d_thawed             ), '^lft@68^'
+  assert.ok ( not Object.isSealed d_thawed.nested      ), '^lft@69^'
+  assert.ok ( not Object.isSealed d_thawed.u           ), '^lft@70^'
+  assert.ok ( not Object.isSealed d_thawed.u.v         ), '^lft@71^'
+  try d_thawed.nested.push 'other' catch e then throw new Error '^lft@72^ ' + e.message
+  try d_thawed.foo  = 'other'      catch e then throw new Error '^lft@73^ ' + e.message
+  try d_thawed.blah = 'other'      catch e then throw new Error '^lft@74^ ' + e.message
+  try d_thawed.u.v.w = 'other'     catch e then throw new Error '^lft@75^ ' + e.message
+  assert.deepEqual d_thawed, matcher_c,               '^lft@76^'
   #.........................................................................................................
   return null
 
-# #-----------------------------------------------------------------------------------------------------------
-# @[ "use partial freezing (2/3)" ] = ->
-#   ### Pretest: test approximate 'manual' implementation of partial freezing, implemented using object
-#   sealing and selective `fix()`ing of attributes: ###
-#   { lets, freeze, thaw, fix, } = ( require '..' ).partial
-#   #.........................................................................................................
-#   counter = 0
-#   d       = { foo: 'bar', nested: [ 2, 3, 5, 7, ], u: { v: { w: 'x', }, }, }
-#   e       = d.nested.push 11
-#   Object.defineProperty d, 'foo',    { enumerable: true, writable: false, configurable: false, value: freeze d.foo }
-#   Object.defineProperty d, 'nested', { enumerable: true, writable: false, configurable: false, value: freeze d.nested }
-#   Object.defineProperty d, 'count',
-#     enumerable:     true
-#     configurable:   false
-#     get:            -> ++counter
-#     set:            ( value ) -> counter = value
-#   # log Object.getOwnPropertyDescriptors d
-#   Object.seal d
-#   #.........................................................................................................
-#   assert.ok ( ( type_of ( Object.getOwnPropertyDescriptor d, 'count' ).set ) is 'function' ),   '^lft@79^'
-#   assert.ok ( Object.isSealed d ),                                                              '^lft@80^'
-#   assert.deepEqual ( Object.keys d ), [ 'foo', 'nested', 'count', ],                            '^lft@81^'
-#   assert.ok ( d.count is 1                  ), '^lft@82^'
-#   assert.ok ( d.count is 2                  ), '^lft@83^'
-#   assert.ok ( ( d.count = 42 ) is 42        ), '^lft@84^'
-#   assert.ok ( d.count is 43                 ), '^lft@85^'
-#   assert.throws ( -> d.blah = 'other' ), { message: /Cannot add property blah, object is not extensible/, }, '^lft@86^'
-#   assert.throws ( -> d.foo  = 'other' ), { message: /Cannot assign to read only property/,                }, '^lft@87^'
-#   return null
+#-----------------------------------------------------------------------------------------------------------
+@[ "use partial freezing (2/3)" ] = ->
+  ### Pretest: test approximate 'manual' implementation of partial freezing, implemented using object
+  sealing and selective `fix()`ing of attributes: ###
+  { lets, freeze, thaw, fix, } = ( require '..' ).partial
+  #.........................................................................................................
+  counter = 0
+  d       = { foo: 'bar', nested: [ 2, 3, 5, 7, ], u: { v: { w: 'x', }, }, }
+  e       = d.nested.push 11
+  open_vz = { a: 123, }
+  Object.defineProperty d, 'foo',    { enumerable: true, writable: false, configurable: false, value: freeze d.foo }
+  Object.defineProperty d, 'nested', { enumerable: true, writable: false, configurable: false, value: freeze d.nested }
+  Object.defineProperty d, 'count',
+    enumerable:     true
+    configurable:   false
+    get:            -> ++counter
+    set:            ( value ) -> counter = value
+  Object.defineProperty d, 'open_vz',
+    enumerable:     true
+    configurable:   false
+    get:            -> open_vz
+  # log Object.getOwnPropertyDescriptors d
+  Object.seal d
+  #.........................................................................................................
+  assert.ok ( ( type_of ( Object.getOwnPropertyDescriptor d, 'count' ).set ) is 'function' ),   '^lft@77^'
+  assert.ok ( Object.isSealed d ),                                                              '^lft@78^'
+  assert.deepEqual ( Object.keys d ), [ 'foo', 'nested', 'u', 'count', 'open_vz', ],            '^lft@79^'
+  assert.ok ( d.count is 1                  ), '^lft@80^'
+  assert.ok ( d.count is 2                  ), '^lft@81^'
+  assert.ok ( ( d.count = 42 ) is 42        ), '^lft@82^'
+  assert.ok ( d.count is 43                 ), '^lft@83^'
+  assert.throws ( -> d.blah = 'other' ), { message: /Cannot add property blah, object is not extensible/, }, '^lft@84^'
+  assert.throws ( -> d.foo  = 'other' ), { message: /Cannot assign to read only property/,                }, '^lft@85^'
+  try d.open_vz.new_property = 42 catch e then throw new Error '^lft@86^ ' + e.message
+  assert.deepEqual d.open_vz.new_property, 42, '^lft@87^'
+  return null
 
-# #-----------------------------------------------------------------------------------------------------------
-# @[ "use partial freezing (3/3)" ] = ->
-#   { lets, freeze, thaw, fix, lets_compute, } = ( require '..' ).partial
-#   # log '^!!!!!!!!!!!!!!!!!!!!!!!!!!^'; return
-#   #.........................................................................................................
-#   counter = 0
-#   d       = lets { foo: 'bar', nested: [ 2, 3, 5, 7, ], u: { v: { w: 'x', }, }, }
-#   e       = lets d, ( d ) -> d.nested.push 11
-#   d       = lets_compute d, 'count', ( -> ++counter ), ( ( x ) -> counter = x )
-#   # d       = lets d, ( d ) -> Object.defineProperty d, 'count',
-#   #   enumerable:     true
-#   #   configurable:   false
-#   #   get:            -> ++counter
-#   #   set:            ( value ) -> counter = value
-#   assert.ok ( ( type_of ( Object.getOwnPropertyDescriptor d, 'count' ).set ) is 'function' ),   '^lft@88^'
-#   log '^3341^', d
-#   log '^3341^', Object.getOwnPropertyDescriptor d, 'u'
-#   log '^3341^', Object.getOwnPropertyDescriptor d.u, 'v'
-#   log '^3341^', Object.getOwnPropertyDescriptor d.u.v, 'w'
-#   assert.deepEqual d.u, { v: { w: 'x', }, },                                                    '^lft@89^'
-#   assert.ok ( Object.isSealed d   ),                                                              '^lft@90^'
-#   assert.ok ( Object.isSealed d.u ),                                                            '^lft@91^'
-#   assert.ok ( Object.isSealed d.u.v ),                                                            '^lft@92^'
-#   assert.deepEqual ( Object.keys d ), [ 'foo', 'nested', 'count', ],                            '^lft@93^'
-#   assert.ok ( d.count is 1                  ), '^lft@94^'
-#   assert.ok ( d.count is 2                  ), '^lft@95^'
-#   assert.ok ( ( d.count = 42 ) is 42        ), '^lft@96^'
-#   assert.ok ( d.count is 43                 ), '^lft@97^'
-#   assert.throws ( -> d.blah = 'other' ), { message: /Cannot add property blah, object is not extensible/, }, '^lft@98^'
-#   assert.throws ( -> d.foo  = 'other' ), { message: /Cannot assign to read only property/,                }, '^lft@99^'
-#   return null
+#-----------------------------------------------------------------------------------------------------------
+@[ "use partial freezing (3/3)" ] = ->
+  { lets, freeze, thaw, fix, lets_compute, } = ( require '..' ).partial
+  #.........................................................................................................
+  counter = 0
+  open_vz = { a: 123, }
+  d       = lets { foo: 'bar', nested: [ 2, 3, 5, 7, ], u: { v: { w: 'x', }, }, }
+  e       = lets d, ( d ) -> d.nested.push 11
+  d       = lets_compute d, 'count', ( -> ++counter ), ( ( x ) -> counter = x )
+  d       = lets_compute d, 'open_vz', ( -> open_vz )
+  assert.ok ( ( type_of ( Object.getOwnPropertyDescriptor d, 'count' ).set ) is 'function' ),   '^lft@88^'
+  assert.ok ( d.count is 1                  ), '^lft@89^'
+  assert.ok ( d.count is 2                  ), '^lft@90^'
+  assert.ok ( ( d.count = 42 ) is 42        ), '^lft@91^'
+  assert.ok ( d.count is 43                 ), '^lft@92^'
+  assert.ok ( d.open_vz is open_vz          ), '^lft@93^'
+  try d.open_vz.new_property = 'new value' catch e then throw new Error '^lft@94^ ' + e.message
+  assert.ok ( d.open_vz is open_vz          ), '^lft@93^'
+  assert.deepEqual open_vz, { a: 123, new_property: 'new value', }, '^lft@93^'
+  assert.throws ( -> d.blah = 'other' ), { message: /Cannot add property blah, object is not extensible/, }, '^lft@84^'
+  assert.throws ( -> d.foo  = 'other' ), { message: /Cannot assign to read only property/,                }, '^lft@85^'
+  return null
+  # log '^7662^'; return
 
 # #-----------------------------------------------------------------------------------------------------------
 # @[ "may pass in null to lets_compute as getter, setter" ] = ->
@@ -203,14 +200,14 @@ log                       = console.log
 #   counter = 0
 #   d       = lets { foo: 'bar', }
 #   d       = lets_compute d, 'count', ( -> ++counter )
-#   assert.ok ( d.count is 1                  ), '^lft@100^'
-#   assert.ok ( d.count is 2                  ), '^lft@101^'
+#   assert.ok ( d.count is 1                  ), '^lft@95^'
+#   assert.ok ( d.count is 2                  ), '^lft@96^'
 #   #.........................................................................................................
 #   counter = 0
 #   d       = lets { foo: 'bar', }
 #   d       = lets_compute d, 'count', ( -> ++counter ), null
-#   assert.ok ( d.count is 1                  ), '^lft@102^'
-#   assert.ok ( d.count is 2                  ), '^lft@103^'
+#   assert.ok ( d.count is 1                  ), '^lft@97^'
+#   assert.ok ( d.count is 2                  ), '^lft@98^'
 #   #.........................................................................................................
 #   counter = 0
 #   d       = lets { foo: 'bar', }
@@ -218,7 +215,7 @@ log                       = console.log
 #   #.........................................................................................................
 #   counter = 0
 #   d       = lets { foo: 'bar', }
-#   assert.throws ( -> lets_compute d, 'count', null, null ), /must define getter or setter/, '^lft@104^'
+#   assert.throws ( -> lets_compute d, 'count', null, null ), /must define getter or setter/, '^lft@99^'
 
 # #-----------------------------------------------------------------------------------------------------------
 # @[ "lets_compute keeps object identity" ] = ->
@@ -237,14 +234,14 @@ log                       = console.log
 #   #.........................................................................................................
 #   test_something_ok = ( x, n ) ->
 #     tests = [
-#       -> assert.ok ( ( ( require 'util' ).inspect x ).startsWith 'Someclass' ), '^lft@105^' + "(##{n})"
-#       -> assert.deepEqual ( Object.getOwnPropertyNames x ), [ 'this_is_otherclass', 'this_is_someclass' ], '^lft@^' + "(##{n})"
-#       -> assert.ok     x.hasOwnProperty 'this_is_otherclass',  '^lft@^' + "(##{n})"
-#       -> assert.ok     x.hasOwnProperty 'this_is_someclass',   '^lft@^' + "(##{n})"
-#       -> assert.ok not x.hasOwnProperty 'f',                   '^lft@^' + "(##{n})"
-#       -> assert.ok not x.hasOwnProperty 'g',                   '^lft@^' + "(##{n})"
-#       -> assert.deepEqual x.g(), [ 'Otherclass.this_is_otherclass', 'Otherclass.this_is_someclass' ], '^lft@^' + "(##{n})"
-#       -> assert.deepEqual x.f(), [ 'Someclass.this_is_otherclass', 'Someclass.this_is_someclass' ], '^lft@^' + "(##{n})"
+#       -> assert.ok ( ( ( require 'util' ).inspect x ).startsWith 'Someclass' ), '^lft@100^' + "(##{n})"
+#       -> assert.deepEqual ( Object.getOwnPropertyNames x ), [ 'this_is_otherclass', 'this_is_someclass' ], '^lft@101 + "(##{n})"
+#       -> assert.ok     x.hasOwnProperty 'this_is_otherclass',  '^lft@102 + "(##{n})"
+#       -> assert.ok     x.hasOwnProperty 'this_is_someclass',   '^lft@103 + "(##{n})"
+#       -> assert.ok not x.hasOwnProperty 'f',                   '^lft@104 + "(##{n})"
+#       -> assert.ok not x.hasOwnProperty 'g',                   '^lft@105 + "(##{n})"
+#       -> assert.deepEqual x.g(), [ 'Otherclass.this_is_otherclass', 'Otherclass.this_is_someclass' ], '^lft@106 + "(##{n})"
+#       -> assert.deepEqual x.f(), [ 'Someclass.this_is_otherclass', 'Someclass.this_is_someclass' ], '^lft@107 + "(##{n})"
 #       ]
 #     error_count = 0
 #     for test, idx in tests
@@ -253,7 +250,7 @@ log                       = console.log
 #         test()
 #       catch error
 #         error_count++
-#         log '^lft@^', "ERROR:", error.message
+#         log '^lft@108, "ERROR:", error.message
 #     if error_count > 0
 #       assert.ok false, "^lft@86^(##{n}) #{error_count} tests failed"
 #     return null
@@ -299,7 +296,7 @@ log                       = console.log
 #         test()
 #       catch error
 #         error_count++
-#         log '^lft@^', "ERROR:", error.message
+#         log '^lft@109, "ERROR:", error.message
 #     if error_count > 0
 #       assert.ok false, "^lft@88^ #{error_count} tests failed"
 #     return null
