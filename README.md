@@ -137,7 +137,14 @@ the freezing versions: `thaw()` just returns its only argument, making it a no-o
 a deep copy; `lets()` will likewise make a deep copy, and the value that you can modify in the callback will
 be the return value of the method.
 
-
+```
+# as of LetsFreezeThat v2.2.3, immer v3.3.0
+# calls to `lets()`, `produce()` per second, changing one property at a time
+00:00 BENCHMARKS  ▶  using_letsfreezethat_nofreeze                    565,727 Hz   100.0 % │████████████▌│
+00:00 BENCHMARKS  ▶  using_letsfreezethat_standard                    185,332 Hz    32.8 % │████▏        │
+00:00 BENCHMARKS  ▶  using_immer                                       50,839 Hz     9.0 % │█▏           │
+00:00 BENCHMARKS  ▶  using_letsfreezethat_partial                      30,216 Hz     5.3 % │▋            │
+```
 
 ## What it Does, and What it Doesn't
 
