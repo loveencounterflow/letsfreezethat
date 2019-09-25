@@ -2,7 +2,11 @@
 'use strict'
 
 #-----------------------------------------------------------------------------------------------------------
-{ type_of, } = require './helpers'
+{ type_of
+  is_descriptor_of_computed_value
+  set_writable_value
+  set_readonly_value
+  set_computed_value } = require './helpers'
 
 #-----------------------------------------------------------------------------------------------------------
 freeze = ( x ) ->
@@ -23,51 +27,68 @@ thaw = ( x ) ->
     throw error
 
 #-----------------------------------------------------------------------------------------------------------
-_is_computed = ( descriptor ) ->
-  return ( ( keys = Object.keys descriptor ).includes 'set' ) or ( keys.includes 'get' )
-
-#-----------------------------------------------------------------------------------------------------------
 _freeze = ( x ) ->
-  #.........................................................................................................
-  if Array.isArray x
-    return Object.seal ( ( _freeze value ) for value in x )
-  #.........................................................................................................
-  if ( type_of x ) is 'object'
-    R = {}
-    for key, descriptor of Object.getOwnPropertyDescriptors x
-      if _is_computed descriptor
-        Object.defineProperty R, key, descriptor
-      else
-        ### TAINT must recurse into object ###
-        if Array.isArray descriptor.value
-          descriptor.value = _freeze descriptor.value
-        descriptor.configurable = false
-        descriptor.writable     = false
-        Object.defineProperty R, key, descriptor
-    return Object.seal R
+  switch type = type_of x
+    #.......................................................................................................
+    when 'array'
+      return Object.seal ( ( _freeze value ) for value in x )
+    #.......................................................................................................
+    when 'object'
+      R = {}
+      for key, descriptor of Object.getOwnPropertyDescriptors x
+        if is_descriptor_of_computed_value descriptor
+          Object.defineProperty R, key, descriptor
+        else
+          if ( type_of descriptor.value ) in [ 'object', 'array', ]
+            descriptor.value = _freeze descriptor.value
+          descriptor.configurable = false
+          descriptor.writable     = false
+          Object.defineProperty R, key, descriptor
+      return Object.seal R
   #.........................................................................................................
   return x
 
 #-----------------------------------------------------------------------------------------------------------
 _thaw = ( x ) ->
-  #.........................................................................................................
-  if Array.isArray x
-    return ( ( _thaw value ) for value in x )
-  #.........................................................................................................
-  if ( type_of x ) is 'object'
-    R = {}
-    for key, descriptor of Object.getOwnPropertyDescriptors x
-      if _is_computed descriptor
-        Object.defineProperty R, key, descriptor
-      else
-        if Array.isArray descriptor.value
-          descriptor.value = _thaw descriptor.value
-        descriptor.configurable = true
-        descriptor.writable     = true
-        Object.defineProperty R, key, descriptor
-    return R
+  switch type = type_of x
+    #.......................................................................................................
+    when 'array'
+      return ( ( _thaw value ) for value in x )
+    #.......................................................................................................
+    when 'object'
+      R = {}
+      for key, descriptor of Object.getOwnPropertyDescriptors x
+        if is_descriptor_of_computed_value descriptor
+          Object.defineProperty R, key, descriptor
+        else
+          if ( type_of descriptor.value ) in [ 'object', 'array', ]
+            descriptor.value = _thaw descriptor.value
+          descriptor.configurable = true
+          descriptor.writable     = true
+          Object.defineProperty R, key, descriptor
+      return R
   #.........................................................................................................
   return x
+
+
+  # #.........................................................................................................
+  # if Array.isArray x
+  #   return ( ( _thaw value ) for value in x )
+  # #.........................................................................................................
+  # if ( type_of x ) is 'object'
+  #   R = {}
+  #   for key, descriptor of Object.getOwnPropertyDescriptors x
+  #     if is_descriptor_of_computed_value descriptor
+  #       Object.defineProperty R, key, descriptor
+  #     else
+  #       if Array.isArray descriptor.value
+  #         descriptor.value = _thaw descriptor.value
+  #       descriptor.configurable = true
+  #       descriptor.writable     = true
+  #       Object.defineProperty R, key, descriptor
+  #   return R
+  # #.........................................................................................................
+  # return x
 
 #-----------------------------------------------------------------------------------------------------------
 lets = ( original, modifier ) ->
@@ -76,29 +97,14 @@ lets = ( original, modifier ) ->
   return freeze draft
 
 #-----------------------------------------------------------------------------------------------------------
-lets_compute = ( original, name, get = null, set = null ) ->
+lets_compute = ( original, key, get = null, set = null ) ->
   draft = thaw original
-  descriptor      = { enumerable: true, configurable: false, }
-  if get?
-    unless ( type = type_of get ) is 'function'
-      throw new Error "µ77631 expected a function, got a #{type}"
-    descriptor.get  = get
-  if set?
-    unless ( not set )? or ( type = type_of set ) is 'function'
-      throw new Error "µ77631 expected a function, got a #{type}"
-    descriptor.set  = set
-  if ( not get? ) and ( not set? )
-    throw new Error "µ79825 must define getter or setter"
-  Object.defineProperty draft, name, descriptor
+  set_computed_value original, key, get, set
   return freeze draft
 
 #-----------------------------------------------------------------------------------------------------------
-fix = ( target, name, value ) ->
-  Object.defineProperty target, name, {
-    enumerable:     true
-    writable:       false
-    configurable:   false
-    value:          freeze value }
+fix = ( target, key, value ) ->
+  set_readonly_value target, key, freeze value
   return target
 
 #-----------------------------------------------------------------------------------------------------------
