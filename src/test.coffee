@@ -185,10 +185,16 @@ log                       = console.log
   assert.ok ( d.count is 43                 ), '^lft@92^'
   assert.ok ( d.open_vz is open_vz          ), '^lft@93^'
   try d.open_vz.new_property = 'new value' catch e then throw new Error '^lft@94^ ' + e.message
-  assert.ok ( d.open_vz is open_vz          ), '^lft@93^'
-  assert.deepEqual open_vz, { a: 123, new_property: 'new value', }, '^lft@93^'
-  assert.throws ( -> d.blah = 'other' ), { message: /Cannot add property blah, object is not extensible/, }, '^lft@84^'
-  assert.throws ( -> d.foo  = 'other' ), { message: /Cannot assign to read only property/,                }, '^lft@85^'
+  assert.ok ( d.open_vz is open_vz          ), '^lft@95^'
+  assert.deepEqual open_vz, { a: 123, new_property: 'new value', }, '^lft@96^'
+  assert.throws ( -> d.blah = 'other' ), { message: /Cannot add property blah, object is not extensible/, }, '^lft@97^'
+  assert.throws ( -> d.foo  = 'other' ), { message: /Cannot assign to read only property/,                }, '^lft@98^'
+  lets d, ( d ) ->
+    dsc = Object.getOwnPropertyDescriptor d, 'count'
+    assert.deepEqual dsc.configurable, true, '^lft@99^'
+  lets d, ( d ) ->
+    dsc = Object.getOwnPropertyDescriptor d, 'open_vz'
+    assert.deepEqual dsc.configurable, true, '^lft@100^'
   return null
 
 #-----------------------------------------------------------------------------------------------------------
@@ -199,14 +205,14 @@ log                       = console.log
   counter = 0
   d       = lets { foo: 'bar', }
   d       = lets_compute d, 'count', ( -> ++counter )
-  assert.ok ( d.count is 1                  ), '^lft@95^'
-  assert.ok ( d.count is 2                  ), '^lft@96^'
+  assert.ok ( d.count is 1                  ), '^lft@101^'
+  assert.ok ( d.count is 2                  ), '^lft@102^'
   #.........................................................................................................
   counter = 0
   d       = lets { foo: 'bar', }
   d       = lets_compute d, 'count', ( -> ++counter ), null
-  assert.ok ( d.count is 1                  ), '^lft@97^'
-  assert.ok ( d.count is 2                  ), '^lft@98^'
+  assert.ok ( d.count is 1                  ), '^lft@^'
+  assert.ok ( d.count is 2                  ), '^lft@^'
   #.........................................................................................................
   counter = 0
   d       = lets { foo: 'bar', }
@@ -214,7 +220,7 @@ log                       = console.log
   #.........................................................................................................
   counter = 0
   d       = lets { foo: 'bar', }
-  assert.throws ( -> lets_compute d, 'count', null, null ), /must define getter or setter/, '^lft@99^'
+  assert.throws ( -> lets_compute d, 'count', null, null ), /must define getter or setter/, '^lft@^'
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "lets_compute keeps object identity" ] = ->
@@ -233,14 +239,14 @@ log                       = console.log
   #.........................................................................................................
   test_something_ok = ( x, n ) ->
     tests = [
-      -> assert.ok ( ( ( require 'util' ).inspect x ).startsWith 'Someclass' ), '^lft@100^' + "(##{n})"
-      -> assert.deepEqual ( Object.getOwnPropertyNames x ), [ 'this_is_otherclass', 'this_is_someclass' ], '^lft@101^' + "(##{n})"
-      -> assert.ok     x.hasOwnProperty 'this_is_otherclass',  '^lft@102^' + "(##{n})"
-      -> assert.ok     x.hasOwnProperty 'this_is_someclass',   '^lft@103^' + "(##{n})"
-      -> assert.ok not x.hasOwnProperty 'f',                   '^lft@104^' + "(##{n})"
-      -> assert.ok not x.hasOwnProperty 'g',                   '^lft@105^' + "(##{n})"
-      -> assert.deepEqual x.g(), [ 'Otherclass.this_is_otherclass', 'Otherclass.this_is_someclass' ], '^lft@106^' + "(##{n})"
-      -> assert.deepEqual x.f(), [ 'Someclass.this_is_otherclass', 'Someclass.this_is_someclass' ], '^lft@107^' + "(##{n})"
+      -> assert.ok ( ( ( require 'util' ).inspect x ).startsWith 'Someclass' ), '^lft@^' + "(##{n})"
+      -> assert.deepEqual ( Object.getOwnPropertyNames x ), [ 'this_is_otherclass', 'this_is_someclass' ], '^lft@^' + "(##{n})"
+      -> assert.ok     x.hasOwnProperty 'this_is_otherclass',  '^lft@^' + "(##{n})"
+      -> assert.ok     x.hasOwnProperty 'this_is_someclass',   '^lft@^' + "(##{n})"
+      -> assert.ok not x.hasOwnProperty 'f',                   '^lft@^' + "(##{n})"
+      -> assert.ok not x.hasOwnProperty 'g',                   '^lft@^' + "(##{n})"
+      -> assert.deepEqual x.g(), [ 'Otherclass.this_is_otherclass', 'Otherclass.this_is_someclass' ], '^lft@^' + "(##{n})"
+      -> assert.deepEqual x.f(), [ 'Someclass.this_is_otherclass', 'Someclass.this_is_someclass' ], '^lft@^' + "(##{n})"
       ]
     error_count = 0
     for test, idx in tests
@@ -249,9 +255,9 @@ log                       = console.log
         test()
       catch error
         error_count++
-        log '^lft@108^', "ERROR:", error.message
+        log '^lft@^', "ERROR:", error.message
     if error_count > 0
-      assert.ok false, "^lft@86^(##{n}) #{error_count} tests failed"
+      assert.ok false, "^lft@^(##{n}) #{error_count} tests failed"
     return null
   #.........................................................................................................
   tests = [
@@ -295,9 +301,9 @@ log                       = console.log
         test()
       catch error
         error_count++
-        log '^lft@109^', "ERROR:", error.message
+        log '^lft@^', "ERROR:", error.message
     if error_count > 0
-      assert.ok false, "^lft@88^ #{error_count} tests failed"
+      assert.ok false, "^lft@^ #{error_count} tests failed"
     return null
   return null
 

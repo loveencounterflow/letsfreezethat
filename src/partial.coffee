@@ -58,12 +58,12 @@ _thaw = ( x ) ->
     when 'object'
       R = {}
       for key, descriptor of Object.getOwnPropertyDescriptors x
+        descriptor.configurable = true
         if is_descriptor_of_computed_value descriptor
           Object.defineProperty R, key, descriptor
         else
           if ( type_of descriptor.value ) in [ 'object', 'array', ]
             descriptor.value = _thaw descriptor.value
-          descriptor.configurable = true
           descriptor.writable     = true
           Object.defineProperty R, key, descriptor
       return R
