@@ -223,6 +223,30 @@ log                       = console.log
   assert.throws ( -> lets_compute d, 'count', null, null ), /must define getter or setter/, '^lft@^'
 
 #-----------------------------------------------------------------------------------------------------------
+@[ "functions are kept as functions" ] = ->
+  #.........................................................................................................
+  do =>
+    { lets, freeze, thaw, lets_compute, } = ( require '..' ).partial
+    d = lets { e: { f: ( ( x ) -> x ** 2 ) } }
+    assert.deepEqual ( type_of d.e.f ), 'function', '^lft@1^'
+    assert.deepEqual ( d.e.f 42 ), 42 * 42
+  #.........................................................................................................
+  do =>
+    { lets, freeze, thaw, lets_compute, } = ( require '..' ).nofreeze
+    d = lets { e: { f: ( ( x ) -> x ** 2 ) } }
+    assert.deepEqual ( type_of d.e.f ), 'function', '^lft@1^'
+    assert.deepEqual ( d.e.f 42 ), 42 * 42
+  #.........................................................................................................
+  do =>
+    { lets, freeze, thaw, lets_compute, } = ( require '..' )
+    d = lets { e: { f: ( ( x ) -> x ** 2 ) } }
+    assert.deepEqual ( type_of d.e.f ), 'function', '^lft@1^'
+    assert.deepEqual ( d.e.f 42 ), 42 * 42
+  #.........................................................................................................
+  return null
+
+
+#-----------------------------------------------------------------------------------------------------------
 @[ "lets_compute keeps object identity" ] = ->
   { lets, freeze, thaw, lets_compute, } = ( require '..' ).partial
   #.........................................................................................................
