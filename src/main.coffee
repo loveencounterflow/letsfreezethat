@@ -28,7 +28,9 @@ _freeze = ( x ) ->
   if Array.isArray x
     return Object.freeze ( ( _freeze value ) for value in x )
   #.........................................................................................................
-  if typeof x is 'object'
+  ### kludge to avoid `null` being mistaken as object; should use `type_of` instead of quirky `typeof`,
+  but that breaks some tests in myterious ways, so hotfixing it like this FTTB: ###
+  if ( x isnt null ) and typeof x is 'object'
     R = {}
     R[ key ] = _freeze value for key, value of x
     return Object.freeze R
@@ -66,6 +68,7 @@ fix = ( target, name, value ) ->
 #-----------------------------------------------------------------------------------------------------------
 module.exports = {
   lets, freeze, thaw, fix,
-  nofreeze: ( require './nofreeze' ),
-  partial: ( require './partial' ), }
+  nofreeze:   ( require './nofreeze'    ),
+  partial:    ( require './partial'     ),
+  breadboard: ( require './breadboard'  ), }
 
