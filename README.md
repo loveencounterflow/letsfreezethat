@@ -245,9 +245,51 @@ d.time # 1569337742
 d.time # 1569337744
 ```
 
+---------------------------------------------------------------
+
+**BELOW IS WIP NOT READY FOR CONSUMPTION**
+
+---------------------------------------------------------------
+
+## BreadBoard Mode (Experimental)
+
+BreadBoard mode is an exploration into a form of 'mild immutability' that can (partially) preserve object
+identity while allowing controlled modification of attributes.
+
+### What is BreadBoard good for?
+
+The problem with immutability as used by LetsFreezeThat/standard is, of course, that object identity cannot
+be preserved across object manipulations. This is the desired effect which offers the guarantees we as
+programmers want to have—most of the time: Whenever I call `foo = lets { ... }; foo fancy, 42` I can be sure
+that `fancy` still has the same value—indeed, be the same unmodified object—before and after the call to
+`foo()`.
+
+But there's a catch: What if I want to have a method, call it `is_frobbed ( d ) -> ...`, that returns, say,
+a Boolean to see whether `d` has some derived quality `frobbed` that is computationally expensive? Because
+it is expensive, we would very much like to cache its result, and the most straightforward way to do so is
+by storing results on the object (`d`) itself. Of course, modification means duplication in
+LetsFreezeThat/standard, so we must return a copy of `d` XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+1)  do not use API `if ( boolean = is_QUALITY d ) then ...`, use `d = update_QUALITY d; if d.QUALITY then
+    ...` instead; this is slightly more verbose but does the job.
+
+2)  alternatively, use a cache `c = {}` to store transient results as `c[ id ]`. This way, we can have `if (
+    boolean = is_QUALITY d ) then ...` and still retrieve the cached value as `c[ d.id ].QUALITY`.
 
 
+### Some Points
 
+* Root must be an object; this is called 'the breadboard'
+
+* identity *of the breadboard* is kept (so no copying when doing `lets bb, ( d ) ->`), but identity *of
+  its properties* may change
+
+* root will be locked to extensions with `Object.preventExtensions()`—this is final in the sense that it
+  cannot be undone without copying the object
+
+* computed properties are treated as in LetsFreezeThat/partial
+
+* ??????????????? the descriptors of all other properties will be set to unwritable and unconfigurable
 
 
 
