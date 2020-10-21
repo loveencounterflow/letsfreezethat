@@ -1,3 +1,20 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Let's Freeze Tha{t|w}!](#lets-freeze-thatw)
+  - [Let's `fix()` That!](#lets-fix-that)
+  - [Usage](#usage)
+  - [Performance And `nofreeze` Option](#performance-and-nofreeze-option)
+  - [What it Does, and What it Doesn't](#what-it-does-and-what-it-doesnt)
+  - [Partial Freezing (Experimental)](#partial-freezing-experimental)
+  - [BreadBoard Mode (Experimental)](#breadboard-mode-experimental)
+    - [What is BreadBoard good for?](#what-is-breadboard-good-for)
+    - [Some Points](#some-points)
+- [To Do](#to-do)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 
 # Let's Freeze Tha{t|w}!
 
@@ -292,6 +309,11 @@ LetsFreezeThat/standard, so we must return a copy of `d` XXXXXXXXXXXXXXXXXXXXXXX
 * ??????????????? the descriptors of all other properties will be set to unwritable and unconfigurable
 
 
+# To Do
 
-
+* [ ] preserve symbol attributes when freezing
+* [ ] consider to offer an implementation of HAMT
+  (https://blog.mattbierner.com/persistent-hash-tries-in-javavascript/, https://github.com/mattbierner/hamt,
+  https://github.com/mattbierner/hamt_plus (? https://github.com/mattbierner/hashtrie)) for the frequent use
+  case of immutable maps
 
