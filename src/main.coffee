@@ -1,74 +1,91 @@
 
+
 'use strict'
 
-#-----------------------------------------------------------------------------------------------------------
-{ type_of, } = require './helpers'
+############################################################################################################
+CND                       = require 'cnd'
+rpr                       = CND.rpr
+badge                     = 'LFTNG'
+log                       = CND.get_logger 'plain',     badge
+info                      = CND.get_logger 'info',      badge
+whisper                   = CND.get_logger 'whisper',   badge
+alert                     = CND.get_logger 'alert',     badge
+debug                     = CND.get_logger 'debug',     badge
+warn                      = CND.get_logger 'warn',      badge
+help                      = CND.get_logger 'help',      badge
+urge                      = CND.get_logger 'urge',      badge
+echo                      = CND.echo.bind CND
+Multimix                  = require 'multimix'
+#...........................................................................................................
+frozen                    = Object.isFrozen
+assign                    = Object.assign
+shallow_freeze            = Object.freeze
+shallow_copy              = ( x, P... ) -> assign ( if Array.isArray x then [] else {} ), x, P...
+{ klona: deep_copy, }     = require 'klona/json'
 
-#-----------------------------------------------------------------------------------------------------------
-freeze = ( x ) ->
-  try
-    return _freeze x
-  catch error
-    if error.name is 'RangeError' and error.message is 'Maximum call stack size exceeded'
-      throw new Error "µ45666 unable to freeze circular objects"
-    throw error
 
-#-----------------------------------------------------------------------------------------------------------
-thaw = ( x ) ->
-  try
-    return _thaw x
-  catch error
-    if error.name is 'RangeError' and error.message is 'Maximum call stack size exceeded'
-      throw new Error "µ45667 unable to thaw circular objects"
-    throw error
+#===========================================================================================================
+deep_freeze = ( d ) ->
+  ### immediately return for zero, empty string, null, undefined, NaN, false, true: ###
+  return d if ( not d ) or d is true
+  ### thx to https://github.com/lukeed/klona/blob/master/src/json.js ###
+  switch ( Object::toString.call d )
+    when '[object Array]'
+      k = d.length
+      while ( k-- )
+        continue unless ( v = d[ k ] )? and ( ( typeof v ) is 'object' )
+        d[ k ] = deep_freeze v
+      return shallow_freeze d
+    when '[object Object]'
+      for k, v of d
+        continue unless v? and ( ( typeof v ) is 'object' )
+        d[ k ] = deep_freeze v
+      return shallow_freeze d
+  return d
 
+#===========================================================================================================
+#
 #-----------------------------------------------------------------------------------------------------------
-_freeze = ( x ) ->
-  #.........................................................................................................
-  if Array.isArray x
-    return Object.freeze ( ( _freeze value ) for value in x )
-  #.........................................................................................................
-  ### kludge to avoid `null` being mistaken as object; should use `type_of` instead of quirky `typeof`,
-  but that breaks some tests in myterious ways, so hotfixing it like this FTTB: ###
-  if ( x isnt null ) and typeof x is 'object'
-    R = {}
-    R[ key ] = _freeze value for key, value of x
-    return Object.freeze R
-  #.........................................................................................................
-  return x
-
-#-----------------------------------------------------------------------------------------------------------
-_thaw = ( x ) ->
-  #.........................................................................................................
-  if Array.isArray x
-    return ( ( _thaw value ) for value in x )
-  #.........................................................................................................
-  if ( type_of x ) is 'object'
-    R = {}
-    R[ key ] = _thaw value for key, value of x
-    return R
-  #.........................................................................................................
-  return x
-
-#-----------------------------------------------------------------------------------------------------------
-lets = ( original, modifier ) ->
-  draft = thaw original
+freeze_lets = lets = ( original, modifier ) ->
+  draft = @thaw original
   modifier draft if modifier?
-  return freeze draft
+  return deep_freeze draft
 
 #-----------------------------------------------------------------------------------------------------------
-fix = ( target, name, value ) ->
-  Object.defineProperty target, name, {
-    enumerable:     true
-    writable:       false
-    configurable:   false
-    value:          freeze value }
-  return target
+freeze_lets.assign    = ( me, P...  ) -> deep_freeze  deep_copy shallow_copy  me, P...
+freeze_lets.freeze    = ( me        ) -> deep_freeze                          me
+freeze_lets.thaw      = ( me        ) ->              deep_copy               me
+freeze_lets.get       = ( me, k     ) -> me[ k ]
+freeze_lets.set       = ( me, k, v  ) ->
+  R       = shallow_copy me
+  R[ k ]  = v
+  return shallow_freeze R
+
+
+#===========================================================================================================
+#
+#-----------------------------------------------------------------------------------------------------------
+nofreeze_lets = ( original, modifier ) ->
+  draft = @thaw original
+  modifier draft if modifier?
+  ### TAINT do not copy ###
+  return deep_copy draft
 
 #-----------------------------------------------------------------------------------------------------------
-module.exports = {
-  lets, freeze, thaw, fix,
-  nofreeze:   ( require './nofreeze'    ),
-  partial:    ( require './partial'     ),
-  breadboard: ( require './breadboard'  ), }
+nofreeze_lets.assign  = ( me, P...  ) -> deep_copy shallow_copy me, P...
+nofreeze_lets.freeze  = ( me        ) ->                        me
+nofreeze_lets.thaw    = ( me        ) -> deep_copy              me
+nofreeze_lets.get     = freeze_lets.get
+nofreeze_lets.set     = ( me, k, v  ) ->
+  R       = shallow_copy me
+  R[ k ]  = v
+  return R
+
+
+#===========================================================================================================
+#
+#-----------------------------------------------------------------------------------------------------------
+module.exports = { freeze_lets, nofreeze_lets, }
+
+
 
