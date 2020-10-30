@@ -1,315 +1,339 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
-
-- [Let's Freeze Tha{t|w}!](#lets-freeze-thatw)
-  - [Let's `fix()` That!](#lets-fix-that)
-  - [Usage](#usage)
-  - [Performance And `nofreeze` Option](#performance-and-nofreeze-option)
-  - [What it Does, and What it Doesn't](#what-it-does-and-what-it-doesnt)
-  - [Partial Freezing (Experimental)](#partial-freezing-experimental)
-  - [BreadBoard Mode (Experimental)](#breadboard-mode-experimental)
-    - [What is BreadBoard good for?](#what-is-breadboard-good-for)
-    - [Some Points](#some-points)
-- [To Do](#to-do)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 
-# Let's Freeze Tha{t|w}!
+![let's keep calm and freeze that](./artwork/letskeepcalmandfreezethat.png)
+
+# Let's Freeze That!
 
 [LetsFreezeThat](https://github.com/loveencounterflow/letsfreezethat) is an unapologetically minimal library
 to make working with immutable objects in JavaScript less of a chore.
 
-```
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Using `lets()`](#using-lets)
+  - [Using `thaw()` and `freeze()`](#using-thaw-and-freeze)
+  - [`get()` and `set()`](#get-and-set)
+  - [API, and Moving to Production](#api-and-moving-to-production)
+- [Notes](#notes)
+- [Implementation](#implementation)
+- [Benchmarks](#benchmarks)
+- [Other Libraries, or: Should I COW?](#other-libraries-or-should-i-cow)
+  - [`klona`, `deepfreeze`, `deepfreezer`, `fast-copy`](#klona-deepfreeze-deepfreezer-fast-copy)
+  - [Should I COW?](#should-i-cow)
+- [To Do](#to-do)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Installation
+
+```sh
 npm install letsfreezethat
 ```
 
-```coffee
-{ lets, freeze, thaw, } = require 'letsfreezethat'
-
-d = lets { foo: 'bar', nested: [ 2, 3, 5, 7, ], }                    # create object
-e = lets d, ( d ) -> d.nested.push 11                                # modify copy in callback
-console.log 'd                          ', d                         # { foo: 'bar', nested: [ 2, 3, 5, 7 ] }
-console.log 'e                          ', e                         # { foo: 'bar', nested: [ 2, 3, 5, 7, 11 ] }
-console.log 'd is e                     ', d is e                    # false
-console.log 'Object.isFrozen d          ', Object.isFrozen d         # true
-console.log 'Object.isFrozen d.nested   ', Object.isFrozen d.nested  # true
-console.log 'Object.isFrozen e          ', Object.isFrozen e         # true
-console.log 'Object.isFrozen e.nested   ', Object.isFrozen e.nested  # true
-```
-
-LetsFreezeThat copies the core functionality of [immer](https://github.com/immerjs/immer) (also see
-[here](https://hackernoon.com/introducing-immer-immutability-the-easy-way-9d73d8f71cb3)); the basic
-insight being that
-
-* deeply immutable objects are a great idea for quite a few reasons;
-* working with immutable objects—especially to obtain copies with deeply nested updates—can be a pain in
-  JavaScript since the language does zilch to support you;
-* JavaScript does have lexical scopes and lightweight function syntax;
-* so let's use callbacks that demarcate the scope where modification of object graphs is acceptable.
-
-Now `immer` does a lot more than that as it also allows you to track changes and so on. It also allows
-you to improve performance by foregoing `object.freeze()` altogether (something that I may implement
-in LetsFreezeThat at a later point in time).
-
-What I wanted was a library so small that performance was probably optimal; turns out 50 LOC is generous
-for a functional subset of `immer`.
-
-## Let's `fix()` That!
-
-As of version 2, there's also a `fix()` method that allows to hammer down a particular attribute of
-a given target object:
-
-```
-{ fix, } = require 'letsfreezethat'
-d = { foo: 'bar', }
-fix d, 'sql', { query: "select * from main;", }
-console.log ( k for k of d ) # [ 'foo', 'sql' ]
-try d.sql       = 'other' catch error then console.log error.message # Cannot assign to read only property 'sql' of object '#<Object>'
-try d.sql.query = 'other' catch error then console.log error.message # Cannot assign to read only property 'query' of object '#<Object>'
-```
-
-`fix()` takes three arguments: the `target` object, a `name`, and a `value`. After calling `fix target,
-name, value`, `target[ name ]` will equal `value`, as if one had used assignment, as in `target[ name ] =
-value`. However, the attribute will be tacked onto `target` using `Object.defineProperty` with a descriptor
-`{ enumerable: true, writable: false, configurable: false, value: ( freeze value ), }`, so it cannot (in
-strict mode) be altered itself (because it is frozen), nor can `target[ name ]` be re-assigned or modified
-(because it is not writable and not configurable).
-
-Thus, `fix()` covers a middle ground between all-out freezing and having everything mutable, all the time.
-It is suitable for those situation where some parts of a given state object have to remain updatable when
-other parts are not meant to be fiddled with.
-
-Observe that the `nofreeze` version of `fix()` uses plain assignment and no attribute configuration, so
-`nofreeze.fix target, name, value` is just a fancy way of writing `target[ name ] = value`. This detail may
-change in the future.
-
-
 ## Usage
 
-You can use the `lets()`, `freeze()` and `thaw()` methods by `require`ing them as in `{ lets, freeze, thaw,
-} = require 'letsfreezethat'`, but *probably* you only want `lets()`. `lets()` is similar to `immer`'s
-`produce()`, except simpler.
-
-`lets()` takes a value to start with, call it `d`, and an optional callback function to modify `d`.
-
-Where the callback is not given, `lets d` is equivalent to `freeze d` which returns a copy of `d` with all
-properties recursively frozen.
-
-Where the callback *is* given, that's where you can modify a temporary copy of the first argument `d`. I've
-come to always name those copies the same—`d` most of the time—but that *can* be confusing at first.
-
-You should think of
+`require`ing the module imports a method `lets()`:
 
 ```coffee
-d = lets { key: 'word', value: 'OMG', }
-d = lets d, ( d ) -> d.size = 3
+lets = require 'letsfreezethat'
 ```
 
-as though it was written more like this:
+This method is best explained by having a look at its definition which is in essence approximately three
+lines long: it takes an `original` value (a JS object or array) and an optional `modifier` callback
+function. It then `thaw()`s that value, which entails making a deep copy of it. Next, it calls the
+`modifier()` (if given), ignoring the return value of that call. Step 3 consists of freezing the draft
+version (in-place, i.e. without copying it) and returning it:
 
 ```coffee
-frozen_data_v1 = lets { key: 'word', value: 'OMG', }
-frozen_data_v2 = lets frozen_data_v1, ( draft ) -> draft.size = 3
+lets = ( original, modifier = null ) ->
+  draft = freeze_lets.thaw original
+  modifier draft if modifier?
+  return deep_freeze draft
 ```
 
-The second style has the advantage of being more explicit about the identity of the various values involved;
-also, it is sometimes important to be able to reference back to some property of `frozen_data_v1` after the
-changes, so there's nothing wrong with writing it the more eloquent way.
+### Using `lets()`
 
-Observe you can also use `freeze()` and `thaw()` to the same effect:
+The way this is intended to simplify your life is as follows: you have a function that accepts and returns
+an object (or array). Within that function, you want to perform some computation and update the object the
+functional way (no side effects, no mutations). In order to be on the safe side, you want to work with
+deep-frozen objects (at least in development, but we'll come to that) to prevent any slipups. LetsFreezeThat
+gives you two styles to accomplish that goal, the 'safer' variant being `lets()`, like in the below:
 
 ```coffee
-{ lets
-  freeze
-  thaw }        = require 'letsfreezethat'
+lets = require 'letsfreezethat'
 
-...
-
-original_data   = { key: 'word', value: 'OMG', }
-frozen_data_v1  = freeze original_data
-
-...
-
-draft           = thaw frozen_data_v1
-draft.size      = 3
-frozen_data_v2  = freeze draft
-
-...
-
+set_balance = ( account, amount ) ->
+  account = lets account, ( d ) ->
+    d.balance += amount
+    return null # <- just for clarity but recommended to avoid accidental return value
+  return account
 ```
 
-This is more explicit but also more repetitive.
+At the point in time `account` is set to the return value of the `lets()` call, it becomes bound to a
+faithful copy of the value passed in to `set_balance()`. Whatever you name the second argument to `lets()`
+(I chose `d` here for `draft`, `data` or `datom`, whichever you prefer)—that name (binding) cannot leak out
+of the modifier function, so you're pretty much on the safe side here. And that's it. No new API to learn
+and nothing (well, less) to worry about. Keep calm and `lets()` freeze that!
 
+### Using `thaw()` and `freeze()`
 
-## Performance And `nofreeze` Option
+Using `lets()` is fine but the act of calling a function only to get called back adds a bit of computational
+overhead. You can shave off a few percent (maybe 10% or so) by using `thaw()` and `freeze()` expöicitly,
+like so (using `d` as name for the business data object):
 
-According to my highly scientific tests, LetsFreezeThat is roughly around 3 times as fast as `immer`. When
-your software works to plan and you made sure you used `'use strict'` so JavaScript would have throw an
-error if you had accidentally tried to modify a frozen value, you can get some extra miles for free by
-replacing `{ lets, freeze, thaw, } = require 'letsfreezethat'` with `{ lets, freeze, thaw, } = ( require
-'letsfreezethat' ).nofreeze`. These methods avoid to call `Object.freeze()` and run about twice as fast as
-the freezing versions: `thaw()` just returns its only argument, making it a no-op; `freeze()` just performs
-a deep copy; `lets()` will likewise make a deep copy, and the value that you can modify in the callback will
-be the return value of the method.
+```coffee
+{ thaw, freeze, } = require 'letsfreezethat'
 
-```
-# as of LetsFreezeThat v2.2.3, immer v3.3.0
-# calls to `lets()`, `produce()` per second, changing one property at a time
-00:00 BENCHMARKS  ▶  using_letsfreezethat_nofreeze                    565,727 Hz   100.0 % │████████████▌│
-00:00 BENCHMARKS  ▶  using_letsfreezethat_standard                    185,332 Hz    32.8 % │████▏        │
-00:00 BENCHMARKS  ▶  using_immer                                       50,839 Hz     9.0 % │█▏           │
-00:00 BENCHMARKS  ▶  using_letsfreezethat_partial                      30,216 Hz     5.3 % │▋            │
+set_balance = ( d, amount ) ->
+  d = thaw d
+  d.balance += amount
+  return freeze d
 ```
 
-## What it Does, and What it Doesn't
+And that's it, a little bit simpler than the code for `lets()` if you will but also a little bit more open
+to accidental slips. YMMV.
 
-* LetsFreezeThat always gives back a copy of the value passed in, no matter whether you use `lets()`,
-  `freeze()`, or `thaw()`; this means that even when you don't manipulate a value, the old reference will
-  remain untouched:
+### `get()` and `set()`
+
+`get()` and `set()` are available FTTB but not necessarily recommended. `set()` takes a data object, a key,
+and a value; it will produce a draft copy of the data object, set the key to the value given, freeze the
+data object and return it. If you have a single attribute to set, that's one way to do it:
+
+```coffee
+{ thaw, freeze, get, set, } = require 'letsfreezethat'
+d = freeze d
+d = set d, 'key', value
+w = get d, 'key'
+```
+
+### API, and Moving to Production
+
+LetsFreezeThat comes in two configurable flavors, one that does indeed freeze and thaw (and, thereby,
+implicitly copies) objects, and one that skips the freezing and thawing (but not the copying).
+`require()`ing either flavor returns a method `lets()` as discussed above:
+
+* `lets = require 'letsfreezethat'` which indeed deep-freezes objects and arrays, and
+* `lets = ( require 'letsfreezethat' ).nofreeze` which forgoes freezing (but not copying).
+
+The `lets()` method has a number of attributes which are callable by themselves (no JS tear-off /
+`this`-juggling here):
+
+* **`lets   = ( d, modifier = null ) ->`**—copy of the same method.
+* **`assign = ( d, P... ) ->`**—bulk-assign, semantics like `Object.assign()`, returns copy of `d`.
+* **`freeze = ( d ) ->`**—deep-freeze in-place; a no-op with `nofreeze`.
+* **`thaw   = ( d ) ->`**—thaw a deep copy (in the `freeze` flavor) of `d` and return it;
+* **`get    = ( d, key ) ->`**—return value of an attribute of `d`.
+* **`set    = ( d, key, value ) ->`**—set an attribute of a copy of d, return the copy.
+
+## Notes
+
+* LFT does not copy objects on explicit or implicit `freeze()`. That should be fine for most use cases since
+  what one usually wants to do is either create or thaw a given value (which implies making a copy),
+  manipulate (i.e. mutate) it, and then freeze it prior to passing it on. As long as manipulations are local
+  to a not-too-long single function, chances of screwing up are limited, so we can safely forgo the added
+  overhead of making an additional copy when either `freeze()` is called or a call to `lets d, ( d ) -> ...`
+  has finished.
+
+
+* The idea is that you can switch to the more performant `nofreeze` flavor in production:
 
   ```coffee
-  d = lets d, ( d ) -> # do nothing
+  if running_in_dev_mode then { lets, freeze, thaw } =   require 'letsfreezethat'
+  else                        { lets, freeze, thaw } = ( require 'letsfreezethat' ).nofreeze
   ```
 
-  This is different from `immer`'s `produce()`, which will give you back the original object in case no
-  modification was made.
+  once you have made it sufficiently plausible that no part of your code performs unintended mutation of
+  values chalked up as immutable. Yes, it's all about probabilities rather than proof of correctness.
 
-* LetsFreezeThat does *not* do structural sharing or copy-on-write (COW), nor will it do so in the future.
-  Both structural sharing and COW are great techniques to drive down memory requirements, enhance cache
-  locality and save on garbage collection cycles, but they do come with additional complexities.
+* The non-freezing configuration is a tad faster on `thaw()` and ≈5 times faster on `freeze()`.
 
-  The intended use case for LetsFreezeThat are situations where you have many rather small, rather shallow
-  objects, which offer little opportunity for the benefits of structural sharing and COW to kick in.
+* Observe that the `thaw()` method will always make a copy even with the `nofreeze` flavor;
+  otherwise it is hardly conceivable how an application could switch from the slower `{ freeze: true, }`
+  configuration to the faster `{ freeze: false, }` without breaking.
 
-* LetsFreezeThat does *not* track changes; if you need a report on what properties were affected by some
-  part of your program, use `immer` instead. While having a change manifest may be potentially useful when,
-  say, persisting an object to a DB, those benefits will diminish with smaller object size, same as with
-  structural sharing.
+* In the case a list or an object originates from the outside and other places might still hold references
+  to that value or one of its properties, one can use `thaw()` to make sure any mutations will not be
+  visible from the outside. In this regard, `thaw()` could have been called `deep_copy()`.
 
+## Implementation
 
-## Partial Freezing (Experimental)
+The performance gains seen when going from LetsFreezeThat v2 to v3 are almost entirely due to the code used
+by the [`klona`](https://github.com/lukeed/klona) library, specifically its
+[JSON](https://github.com/lukeed/klona/blob/master/src/json.js) module. The code is simple, straightforward,
+and fast—mostly because it's a well-written piece that does something very specific, name only concerning
+itself with (JSON, JS) objects and arrays.
 
-> “[...] when there are disputes among persons, we can simply say: Let's compute!, without further ado, to
-> see who is right”—Gottfried Wilhelm Leibniz, 1685
+LetsFreezeThat has a similar focus and forgoes freezing `RegExp`s, `Date`s, `Int32Array`s or anything but
+plain `Object`s and `Array`s, so that's a perfect fit. I totally just copied the code of the linked module
+to avoid the dependency on whatever else it is that `klona` has in store (it's a lot got check it out).
 
-It is sometimes desirable to freeze as many properties of a given object as possible and still keep some
-properties in a mutable state; this is often the case when a custom object contains other objects from
-libraries one has no control over.
+## Benchmarks
 
-For example, I recently ran into that conundrum when writing a library that accepts an object representing a
-database and some configuration in order to read from and write to the DB. That library will construct an
-object `{ foo: 42, bar: [...], db, }` to represent both the configuration and the DB instance; naturally, I
-would very much like to freeze the configurational part of that object, but I can't do that with that
-3rd-party DB instance which might rely on being mutable.
+**where to find the code**—The code that produced the below benchmarks is available in
+[𐌷𐌴𐌽𐌲𐌹𐍃𐍄](https://github.com/loveencounterflow/hengist/tree/master/dev/letsfreezethat/src) (which is my
+workbench of sorts to develop, test and benchmark my software). In each case, thousands of small-ish JS
+objects were frozen, manipulated, and thawed, as the case may be, using a number of approaches and a number
+of software packages.
 
-This is where `(require 'letsfreezethat' ).partial` comes in. It offers the same methods as the standard
-version of LetsFreezeThat, but they are implemented (with `Object.seal()`) in such a way that *dynamic
-properties that use getters and/or setters will not be frozen*. Such properties can be defined by
-JavaScript's `Object.defineProperty()` method; because that is a bit cumbersome, LetsFreezeThat/partial
-implements a method
+**how to read the tags**—`letsfreezethat_v{2|3}_f{0|1}` is to be read as: '`letsfreezethat` using { legacy
+v2.2.5 | code for upcoming v3 in the present state } with freezing turned { off | on }'.
 
-```coffee
-lets_compute = ( original, name, get, set = null ) -> ...
+**how to understand the numbers**—Absolute numbers are cycles per second (Hz) where mulling through the
+tasks for a single object is counted as one cycle, and the number and nature of tasks is identical for all
+libraries tested, as far as possible. To obtain a baseline for comparison, JavaScript's `Object.freeze()`
+have been used for freezing and `Object.assign()` for thawing, but keep in mind that both methods are
+shallow in the sense that neither method would affect the nested list in a value like `{ x: [ 1, 2, 3, ],
+}`. LetsFreezeThat does do deep freezing and deep thawing, though (and some of the other libraries do so
+too; others don't), so the comparison is slightly in favor of JavaScript native methods (because they get as
+much credit for each cycle although less gets done).
+
+**why native JS looks slow in comparison**—One would fully expect JS native methods to be always on top of
+the scores but this is not the case. For one thing `letsfreezethat.nofreeze.freeze()` does not actually do
+anything, its literally just the `id()` function: `nofreeze_lets.freeze = ( me ) -> me`, bam. Deep freezing
+without the part where you deep-freeze is indeed faster than shallow freezing, of course. Also, although
+care has been taken to run garbage collection explicitly and to perform any computation that is external to
+each test such that it does not affect the timings, there's always an observable and, sadly, unavoidable
+jitter in performance which can add up to as much as 10 or even 20 per cent of the figures shown. Each test
+case has been run with hundreds or thousands of values and a few (3 to 5) repeated runs, some of them in
+shuffled order, to minimize such effects. I hope to provide error bars in future editions but for now please
+understand that `100,00Hz` means something close to `between 80,000Hz and 120,000Hz` and `50%` is really
+`maybe something around 40% to 60%` of the best performing solution.
+
+**only temporal, no spatial benchmarks**—So far I have not looked at RAM consumption figures for the various
+test cases. This is in part because the intended use case for LetsFreezeThat is in passing around lots of
+small-ish objects that are not very deeply nested ([`datom`s to be more
+precise](https://github.com/loveencounterflow/datom)). I do not expect any copy-on-write (COW)
+implementation to be very space- and time-efficient in JavaScript *for this particular use cae* except for
+the hypothetical case where we have something like [Hash Array Mapped Tries
+(HAMTs)](https://en.wikipedia.org/wiki/Hash_array_mapped_trie) built right into the language like Clojure
+has. The story might well be different in the case where you have deeply nested, larg-ish objects where once
+in while you want to modify-but-not-mutate this or that attribute in a tree. I did not test for that in the
+current iteration. Since the memory consumption of each individual piece of data is so small, just making a
+copy as fast as you can without asking questions turns out to be quite efficient time-wise, and I just
+assume that it will be somehow-acceptable space-wise, too, because garbage collection. It would still be
+nice to have some memory consumption for the various libraries, so maybe sometime.
+
+**what to learn from the benchmarks**—The overall trend is clear. Barring any dumb blunders in my
+benchmarking code what clearly stands out is that structural sharing (as provided by `immutable.js`,
+`immer`, `HAMT`, and `mori`) does not pay out *in terms of time costs* and *provided you have many
+small-ish, flat-tish objects*. It's just not worth the trouble. These are well thought-out, tested and honed
+libraries that go a long way to prevent unwarranted duplication of data, yet their demands in terms of CPU
+cycles is non-trivial when compared to stupid copying.
+
+```
+# hengist/dev/letsfreezethat/src/lft-deepfreeze.benchmarks.coffee
+
+  thaw_____shallow_native                          829,171 Hz   100.0 % │████████████▌│
+  thaw_____klona                                   347,483 Hz    41.9 % │█████▎       │
+█ thaw_____letsfreezethat_v3_f0                    330,089 Hz    39.8 % │█████        │
+█ thaw_____letsfreezethat_v3_f1                    242,111 Hz    29.2 % │███▋         │
+  thaw_____fast_copy                               176,418 Hz    21.3 % │██▋          │
+  thaw_____letsfreezethat_v2                        93,441 Hz    11.3 % │█▍           │
+  thaw_____deepfreezer                              50,249 Hz     6.1 % │▊            │
+  thaw_____deepcopy                                 31,608 Hz     3.8 % │▌            │
+  thaw_____fast_copy_strict                         17,539 Hz     2.1 % │▎            │
+———————————————————————————————————————————————————————————————————————————————————————————
+█ freeze___letsfreezethat_v3_f0                    745,781 Hz    89.9 % │███████████▎ │
+  freeze___shallow_native                          665,340 Hz    80.2 % │██████████   │
+█ freeze___letsfreezethat_v3_f1                    201,651 Hz    24.3 % │███          │
+  freeze___letsfreezethat_v2                        70,091 Hz     8.5 % │█            │
+  freeze___deepfreeze                               59,320 Hz     7.2 % │▉            │
+  freeze___deepfreezer                              37,352 Hz     4.5 % │▋            │
 ```
 
-to simplify the process.
+```
+# hengist/dev/letsfreezethat/src/usecase1.benchmarks.coffee
 
-As a trivial example, let's define a dynamic property `time` to always reflect
-the current time in milliseconds; first the approach that won't work:
-
-```coffee
-d = { foo: 'bar', }
-Object.defineProperty d, 'time', { get: ( -> Date.now() ), }
-d.time # 1569337726
-...
-d.time # 1569337738
+  plainjs_mutable                                    8,268 Hz   100.0 % │████████████▌│
+  plainjs_immutable                                  4,933 Hz    59.7 % │███████▌     │
+█ letsfreezethat_v3_thaw_freeze_f0                   4,682 Hz    56.6 % │███████▏     │
+  letsfreezethat_v2_standard                         4,464 Hz    54.0 % │██████▊      │
+█ letsfreezethat_v3_lets_f0                          4,444 Hz    53.8 % │██████▊      │
+█ letsfreezethat_v3_lets_f1                          4,213 Hz    51.0 % │██████▍      │
+█ letsfreezethat_v3_thaw_freeze_f1                   4,034 Hz    48.8 % │██████▏      │
+  letsfreezethat_v2_nofreeze                         2,143 Hz    25.9 % │███▎         │
+  immutable                                          1,852 Hz    22.4 % │██▊          │
+  mori                                               1,779 Hz    21.5 % │██▊          │
+  hamt                                               1,752 Hz    21.2 % │██▋          │
+  immer                                              1,352 Hz    16.3 % │██           │
 ```
 
-OK, great. But when you `d = freeze d`, then that `time` attribute gets frozen, too:
+```
+# hengist/dev/letsfreezethat/src/main.benchmarks.coffee
 
-```coffee
-{ freeze, } = require 'letsfreezethat'
-d = freeze d
-d.time # 1569337742
-...
-d.time # 1569337742
-...
-d.time # 1569337742
+█ letsfreezethat_v3_f0_freezethaw                  116,513 Hz   100.0 % │████████████▌│
+█ letsfreezethat_v3_f1_freezethaw                   97,101 Hz    83.3 % │██████████▍  │
+█ letsfreezethat_v3_f0_lets                         93,101 Hz    79.9 % │██████████   │
+█ letsfreezethat_v3_f1_lets                         76,045 Hz    65.3 % │████████▏    │
+  plainjs_mutable                                   28,035 Hz    24.1 % │███          │
+  letsfreezethat_v2_f0_lets                         22,410 Hz    19.2 % │██▍          │
+  letsfreezethat_v2_f0_freezethaw                   16,854 Hz    14.5 % │█▊           │
+  letsfreezethat_v2_f1_freezethaw                   16,443 Hz    14.1 % │█▊           │
+  letsfreezethat_v2_f1_lets                         13,648 Hz    11.7 % │█▌           │
+  immutable                                          8,359 Hz     7.2 % │▉            │
+  mori                                               7,845 Hz     6.7 % │▉            │
+  hamt                                               7,449 Hz     6.4 % │▊            │
+  immer                                              4,943 Hz     4.2 % │▌            │
 ```
 
-To make this work as intended, use LetsFreezeThat/partial:
+## Other Libraries, or: Should I COW?
 
-```coffee
-{ freeze, } = ( require 'letsfreezethat' ).partial
-d = freeze d
-d.time # 1569337742
-...
-d.time # 1569337744
-...
-d.time # 1569337900
-```
+During the implementation of LetsFreezeThat I realized there's quite a few packages available that do
+immutability in JavaScript, e.g.
 
-Here is how one would typically use partial freezing and `lets_compute()`:
+* [`HAMT`](https://github.com/mattbierner/hamt)
+* [`mori`](https://swannodette.github.io/mori/)
+* [`immutable.js`](https://immutable-js.github.io/immutable-js/)
 
-```coffee
-{ lets, lets_compute, } = ( require 'letsfreezethat' ).partial
-d = lets { foo: 'bar', }                        # d.foo can't be changed, can't add attributes to d
-d = lets_compute d, 'time', ( -> Date.now() )   # as above, but time keeps changing:
-d.time # 1569337742
-...
-d.time # 1569337744
-```
+and, last but not least,
 
----------------------------------------------------------------
+* [`immer`](https://immerjs.github.io/immer/docs/introduction).
 
-**BELOW IS WIP NOT READY FOR CONSUMPTION**
+**`immer` provided the inspiration**—The key idea of `immer` is that in order to achieve immutability in
+JavaScript, instead of inventing one's own data structures and APIs, it is much simpler to just recursively
+make use of `Object.freeze()` and `Object.assign()` and give the programmer a convenience function—in
+LetsFreezeThat: `lets()`; in `immer`: `produce()`—that allows to perform mutation within the confines of a
+callback function. `immer` aims at reducing memory usage by providing structural sharing. I have not looked
+into its implementation and did not collect any figures on RAM consumption, so I'll leave the reader with
+the [benchmarks](#benchmarks).
 
----------------------------------------------------------------
-
-## BreadBoard Mode (Experimental)
-
-BreadBoard mode is an exploration into a form of 'mild immutability' that can (partially) preserve object
-identity while allowing controlled modification of attributes.
-
-### What is BreadBoard good for?
-
-The problem with immutability as used by LetsFreezeThat/standard is, of course, that object identity cannot
-be preserved across object manipulations. This is the desired effect which offers the guarantees we as
-programmers want to have—most of the time: Whenever I call `foo = lets { ... }; foo fancy, 42` I can be sure
-that `fancy` still has the same value—indeed, be the same unmodified object—before and after the call to
-`foo()`.
-
-But there's a catch: What if I want to have a method, call it `is_frobbed ( d ) -> ...`, that returns, say,
-a Boolean to see whether `d` has some derived quality `frobbed` that is computationally expensive? Because
-it is expensive, we would very much like to cache its result, and the most straightforward way to do so is
-by storing results on the object (`d`) itself. Of course, modification means duplication in
-LetsFreezeThat/standard, so we must return a copy of `d` XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-1)  do not use API `if ( boolean = is_QUALITY d ) then ...`, use `d = update_QUALITY d; if d.QUALITY then
-    ...` instead; this is slightly more verbose but does the job.
-
-2)  alternatively, use a cache `c = {}` to store transient results as `c[ id ]`. This way, we can have `if (
-    boolean = is_QUALITY d ) then ...` and still retrieve the cached value as `c[ d.id ].QUALITY`.
+**`mori` is tempting, but not convincing for my use case**—`mori` is a standalone library that brings some
+ClojureScript goodness to JS programs. Its API is a bit un-JS-ish but does provide some interesting
+functionality. On the downside, it cannot initialize `HashMap`s from plain JS objects, only from sequence of
+key/value pairs, and when doing so, must explicitly take care of nested objects and lists. What you then get
+is data structures that internally look very unlike plain JS objects so even to get a meaningful ouput when
+debugging you can never just `console.log( myvalue )`, you must always convert back to plain JS. These two
+considerations pretty much precluded using `mori` under the hood; also, the [benchmarks](#benchmarks).
 
 
-### Some Points
+### `klona`, `deepfreeze`, `deepfreezer`, `fast-copy`
 
-* Root must be an object; this is called 'the breadboard'
+**most deep-copy algos too slow**—In search for a fast solution that would only provide deep-copying (i.e.
+no copy-on-write / structural sharing) and/or deep-freezing capabilities I found
+[`klona`](https://github.com/lukeed/klona), [`fast-copy`](https://github.com/planttheidea/fast-copy),
+[`deepfreeze`](https://github.com/serapath/deepfreeze), and [`deepfreezer` (a.k.a.
+DeepFreezerJS)](https://github.com/TOGoS/DeepFreezerJS). Of these, [benchmarks](#benchmarks) convinced me
+that only `klona` was likely to bring speedups to the next version of LetsFreezeThat so I did not consider
+the rest any more. Deep-freezing nested compound values in-situ is almost exactly the same as deep-copying
+nested compound values so I used `klona`'s approach for both chores. Be it said though that I did not
+evaluate other possibly interesting aspects of any of these packages, so if your use cases involves copying
+or freezing JS `Date` objects, `Int32Array`s, `RegExp`s, I encourage you to have a second look at any of
+these.
 
-* identity *of the breadboard* is kept (so no copying when doing `lets bb, ( d ) ->`), but identity *of
-  its properties* may change
+### Should I COW?
 
-* root will be locked to extensions with `Object.preventExtensions()`—this is final in the sense that it
-  cannot be undone without copying the object
+**HAMT a solution for COW, *but***—Copy-On-Write is a (not new) technique to eschew 'speculative', avoidable
+memory consumption. One Phil Bagwell proposed a technique how to do that efficiently for trees of data in [a
+paper titled *Ideal Hash Trees* (Lausanne,
+2000)](http://infoscience.epfl.ch/record/64398/files/idealhashtrees.pdf); subsequentially, his technique was
+used by the [Clojure](https://clojure.org/) community to get more memory-efficient and performant COW
+semantics into the language. **Q**: What's not to like?—**A**: It's *still* not as fast in JS to justify the
+effort when your data items are small; again, see the [benchmarks](#benchmarks).
 
-* computed properties are treated as in LetsFreezeThat/partial
-
-* ??????????????? the descriptors of all other properties will be set to unwritable and unconfigurable
-
-
-# To Do
+## To Do
 
 * [ ] preserve symbol attributes when freezing
 * [ ] consider to offer an implementation of HAMT
