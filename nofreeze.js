@@ -1,6 +1,6 @@
 
 'use strict'
 
-module.exports = require( './lib/letsfreezethat-NG-rc3' ).nofreeze_lets;
+module.exports = require( './lib/main.js' ).nofreeze_lets;
 
 
