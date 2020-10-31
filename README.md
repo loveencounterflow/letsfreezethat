@@ -280,16 +280,13 @@ cycles is non-trivial when compared to stupid copying.
 
 ## Other Libraries
 
-During the implementation of LetsFreezeThat I realized there's quite a few packages available that do
-immutability in JavaScript, e.g.
-
-* [`HAMT`](https://github.com/mattbierner/hamt)
-* [`mori`](https://swannodette.github.io/mori/)
-* [`immutable.js`](https://immutable-js.github.io/immutable-js/)
-
-and, last but not least,
-
-* [`immer`](https://immerjs.github.io/immer/docs/introduction).
+Libraries that do deep freezing and/or deep copying and/or provide copy-on-write semantics that are
+available on [npm](http://npmjs.org) include [`immer`](https://immerjs.github.io/immer/docs/introduction),
+[`HAMT`](https://github.com/mattbierner/hamt), [`mori`](https://swannodette.github.io/mori/),
+[`immutable.js`](https://immutable-js.github.io/immutable-js/),
+[`fast-copy`](https://github.com/planttheidea/fast-copy),
+[`deepfreeze`](https://github.com/serapath/deepfreeze), and [`deepfreezer` (a.k.a.
+DeepFreezerJS)](https://github.com/TOGoS/DeepFreezerJS).
 
 **`immer` provided the inspiration**—The key idea of `immer` is that in order to achieve immutability in
 JavaScript, instead of inventing one's own data structures and APIs, it is much simpler to just recursively
