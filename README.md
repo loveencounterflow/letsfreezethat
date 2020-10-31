@@ -122,31 +122,24 @@ The `lets()` method has a number of attributes which are callable by themselves 
 * **`lets   = ( d, modifier = null ) ->`**—copy of the same method.
 * **`assign = ( d, P... ) ->`**—bulk-assign, semantics like `Object.assign()`, returns copy of `d`.
 * **`freeze = ( d ) ->`**—deep-freeze in-place; a no-op with `nofreeze`.
-* **`thaw   = ( d ) ->`**—thaw a deep copy (in the `freeze` flavor) of `d` and return it;
-* **`get    = ( d, key ) ->`**—return value of an attribute of `d`.
-* **`set    = ( d, key, value ) ->`**—set an attribute of a copy of d, return the copy.
+* **`thaw   = ( d ) ->`**—return a deep copy of `d` (thereby un-freezing it).
+* **`get    = ( d, key ) ->`**—return value of an attribute of `d`. Equivalent to `d[ key ]` and just there
+  to complement `set()`.
+* **`set    = ( d, key, value ) ->`**—make a deep copy of `d`, set attribute `key` to `value`, and return
+  the (frozen or unfrozen depending on flavor) copy. Prefer to use `assign()`, `thaw()`/`freeze()`, or
+  `lets()` whenever you want to modify more than a single attribute as `set()` will deep-copy and
+  deep-freeze# on each call.
 
 ## Notes
 
-* LFT does not copy objects on explicit or implicit `freeze()`. That should be fine for most use cases since
-  what one usually wants to do is either create or thaw a given value (which implies making a copy),
-  manipulate (i.e. mutate) it, and then freeze it prior to passing it on. As long as manipulations are local
-  to a not-too-long single function, chances of screwing up are limited, so we can safely forgo the added
+* LetsFreezeThat does not copy objects on explicit or implicit `freeze()`. That should be fine for most use
+  cases since what one usually wants to do is either create or thaw a given value (which implies making a
+  copy), manipulate (i.e. mutate) it, and then freeze it prior to passing it on. As long as manipulations
+  are local to a single function, chances of screwing up are limited, so we can safely forgo the added
   overhead of making an additional copy when either `freeze()` is called or a call to `lets d, ( d ) -> ...`
-  has finished.
-
-
-* The idea is that you can switch to the more performant `nofreeze` flavor in production:
-
-  ```coffee
-  if running_in_dev_mode then { lets, freeze, thaw } =   require 'letsfreezethat'
-  else                        { lets, freeze, thaw } = ( require 'letsfreezethat' ).nofreeze
-  ```
-
-  once you have made it sufficiently plausible that no part of your code performs unintended mutation of
-  values chalked up as immutable. Yes, it's all about probabilities rather than proof of correctness.
-
-* The non-freezing configuration is a tad faster on `thaw()` and ≈5 times faster on `freeze()`.
+  has finished. Observe that when being given a value `d` it is not necessarily safe to `freeze()` it since
+  another party may still hold a reference to `d` and assume mutability. When in doubt, use `freeze thaw d`
+  to freeze a deep copy of `d`.
 
 * Observe that the `thaw()` method will always make a copy even with the `nofreeze` flavor;
   otherwise it is hardly conceivable how an application could switch from the slower `{ freeze: true, }`
@@ -155,6 +148,18 @@ The `lets()` method has a number of attributes which are callable by themselves 
 * In the case a list or an object originates from the outside and other places might still hold references
   to that value or one of its properties, one can use `thaw()` to make sure any mutations will not be
   visible from the outside. In this regard, `thaw()` could have been called `deep_copy()`.
+
+* You may want to switch to the more performant `nofreeze` flavor in production:
+
+  ```coffee
+  if running_in_dev_mode then { lets, freeze, thaw } =   require 'letsfreezethat'
+  else                        { lets, freeze, thaw } = ( require 'letsfreezethat' ).nofreeze
+  ```
+
+  once you have made it sufficiently plausible that no part of your code performs unintended mutation of
+  values chalked up as immutable.
+
+* The non-freezing configuration is a tad faster on `thaw()` and ≈5 times faster on `freeze()`.
 
 ## Implementation
 
