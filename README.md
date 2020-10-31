@@ -21,7 +21,6 @@ to make working with immutable objects in JavaScript less of a chore.
 - [Implementation](#implementation)
 - [Benchmarks](#benchmarks)
 - [Other Libraries, or: Should I COW?](#other-libraries-or-should-i-cow)
-  - [`klona`, `deepfreeze`, `deepfreezer`, `fast-copy`](#klona-deepfreeze-deepfreezer-fast-copy)
   - [Should I COW?](#should-i-cow)
 - [To Do](#to-do)
 
@@ -308,16 +307,13 @@ is data structures that internally look very unlike plain JS objects so even to 
 debugging you can never just `console.log( myvalue )`, you must always convert back to plain JS. These two
 considerations pretty much precluded using `mori` under the hood; also, the [benchmarks](#benchmarks).
 
-
-### `klona`, `deepfreeze`, `deepfreezer`, `fast-copy`
-
 **most deep-copy algos too slow**—In search for a fast solution that would only provide deep-copying (i.e.
 no copy-on-write / structural sharing) and/or deep-freezing capabilities I found
 [`klona`](https://github.com/lukeed/klona), [`fast-copy`](https://github.com/planttheidea/fast-copy),
 [`deepfreeze`](https://github.com/serapath/deepfreeze), and [`deepfreezer` (a.k.a.
 DeepFreezerJS)](https://github.com/TOGoS/DeepFreezerJS). Of these, [benchmarks](#benchmarks) convinced me
 that only `klona` was likely to bring speedups to the next version of LetsFreezeThat so I did not consider
-the rest any more. Deep-freezing nested compound values in-situ is almost exactly the same as deep-copying
+the rest any more. Deep-freezing nested compound values in-place is almost exactly the same as deep-copying
 nested compound values so I used `klona`'s approach for both chores. Be it said though that I did not
 evaluate other possibly interesting aspects of any of these packages, so if your use cases involves copying
 or freezing JS `Date` objects, `Int32Array`s, `RegExp`s, I encourage you to have a second look at any of
