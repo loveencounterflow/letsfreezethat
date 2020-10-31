@@ -20,7 +20,7 @@ to make working with immutable objects in JavaScript less of a chore.
 - [Notes](#notes)
 - [Implementation](#implementation)
 - [Benchmarks](#benchmarks)
-- [Other Libraries, or: Should I COW?](#other-libraries-or-should-i-cow)
+- [Other Libraries](#other-libraries)
   - [Should I COW?](#should-i-cow)
 - [To Do](#to-do)
 
@@ -278,7 +278,7 @@ cycles is non-trivial when compared to stupid copying.
   immer                                              4,943 Hz     4.2 % │▌            │
 ```
 
-## Other Libraries, or: Should I COW?
+## Other Libraries
 
 During the implementation of LetsFreezeThat I realized there's quite a few packages available that do
 immutability in JavaScript, e.g.
