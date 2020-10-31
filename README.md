@@ -21,7 +21,6 @@ to make working with immutable objects in JavaScript less of a chore.
 - [Implementation](#implementation)
 - [Benchmarks](#benchmarks)
 - [Other Libraries](#other-libraries)
-  - [Should I COW?](#should-i-cow)
 - [To Do](#to-do)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -316,15 +315,13 @@ evaluate other possibly interesting aspects of any of these packages, so if your
 or freezing JS `Date` objects, `Int32Array`s, `RegExp`s, I encourage you to have a second look at any of
 these.
 
-### Should I COW?
-
-**HAMT a solution for COW, *but***—Copy-On-Write is a (not new) technique to eschew 'speculative', avoidable
-memory consumption. Phil Bagwell suggested how to do that efficiently for trees of data in [a paper titled
-*Ideal Hash Trees* (Lausanne, 2000)](http://infoscience.epfl.ch/record/64398/files/idealhashtrees.pdf);
+**Should I COW?**—Copy-On-Write is a technique to eschew 'speculative', avoidable memory consumption. Phil
+Bagwell suggested how to efficiently leverage structural sharing for trees of data in [a paper titled *Ideal
+Hash Trees* (Lausanne, 2000)](http://infoscience.epfl.ch/record/64398/files/idealhashtrees.pdf);
 subsequentially, his approach was implemented by the [Clojure](https://clojure.org/) community to get more
-memory-efficient and performant COW semantics into the language. **Q**: What's not to like?—**A**: It's
-*still* not as fast in JS to justify the effort when your data items are small; again, see the
-[benchmarks](#benchmarks).
+memory-efficient and performant COW semantics into the language. Alas, according to my benchmarks HAMT is
+still not fast enough in JS to justify the effort when your data items are small as you'll only get 5%—25%
+of the performance that you'd get with naive copying.
 
 ## To Do
 
