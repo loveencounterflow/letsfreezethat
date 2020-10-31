@@ -116,6 +116,8 @@ implicitly copies) objects, and one that skips the freezing and thawing (but not
 * `lets = require 'letsfreezethat'` which indeed deep-freezes objects and arrays, and
 * `lets = ( require 'letsfreezethat' ).nofreeze` which forgoes freezing (but not copying).
 
+The `nofreeze` flavor is around 3 to 4 times faster on `freeze()`.
+
 The `lets()` method has a number of attributes which are callable by themselves (no JS tear-off /
 `this`-juggling here):
 
@@ -149,17 +151,6 @@ The `lets()` method has a number of attributes which are callable by themselves 
   to that value or one of its properties, one can use `thaw()` to make sure any mutations will not be
   visible from the outside. In this regard, `thaw()` could have been called `deep_copy()`.
 
-* You may want to switch to the more performant `nofreeze` flavor in production:
-
-  ```coffee
-  if running_in_dev_mode then { lets, freeze, thaw } =   require 'letsfreezethat'
-  else                        { lets, freeze, thaw } = ( require 'letsfreezethat' ).nofreeze
-  ```
-
-  once you have made it sufficiently plausible that no part of your code performs unintended mutation of
-  values chalked up as immutable.
-
-* The non-freezing configuration is a tad faster on `thaw()` and ≈5 times faster on `freeze()`.
 
 ## Implementation
 
