@@ -21,14 +21,14 @@ deep_copy = ( d ) ->
       k = d.length
       R = []
       while ( k-- )
-        continue unless ( v = d[ k ] )? and ( ( typeof v ) is 'object' )
-        R[ k ] = deep_copy v
+        if ( v = d[ k ] )? and ( ( typeof v ) is 'object' ) then  R[ k ] = deep_copy  v
+        else                                                      R[ k ] =            v
       return R
     when '[object Object]'
       R = {}
       for k, v of d
-        continue unless v? and ( ( typeof v ) is 'object' )
-        R[ k ] = deep_copy v
+        if v? and ( ( typeof v ) is 'object' ) then R[ k ] = deep_copy  v
+        else                                        R[ k ] =            v
       return R
   return d
 
@@ -42,13 +42,13 @@ deep_freeze = ( d ) ->
     when '[object Array]'
       k = d.length
       while ( k-- )
-        continue unless ( v = d[ k ] )? and ( ( typeof v ) is 'object' )
-        d[ k ] = deep_freeze v
+        if ( v = d[ k ] )? and ( ( typeof v ) is 'object' ) then  d[ k ] = deep_freeze  v
+        else                                                      d[ k ] =              v
       return shallow_freeze d
     when '[object Object]'
       for k, v of d
-        continue unless v? and ( ( typeof v ) is 'object' )
-        d[ k ] = deep_freeze v
+        if v? and ( ( typeof v ) is 'object' ) then d[ k ] = deep_freeze  v
+        else                                        d[ k ] =              v
       return shallow_freeze d
   return d
 
@@ -75,7 +75,7 @@ freeze_lets.set       = ( me, k, v  ) ->
 #===========================================================================================================
 #
 #-----------------------------------------------------------------------------------------------------------
-nofreeze_lets = ( original, modifier = null ) ->
+lets.nofreeze = nofreeze_lets = ( original, modifier = null ) ->
   draft = nofreeze_lets.thaw original
   modifier draft if modifier?
   ### TAINT do not copy ###
