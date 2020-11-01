@@ -36,19 +36,26 @@ deep_copy = ( d ) ->
 deep_freeze = ( d ) ->
   ### TAINT code duplication ###
   ### immediately return for zero, empty string, null, undefined, NaN, false, true: ###
-  return d if ( not d ) or d is true
+  return d if ( not d ) or ( d is true )
   ### thx to https://github.com/lukeed/klona/blob/master/src/json.js ###
+  is_first = true
   switch ( Object::toString.call d )
     when '[object Array]'
       k = d.length
       while ( k-- )
-        if ( v = d[ k ] )? and ( ( typeof v ) is 'object' ) then  d[ k ] = deep_freeze  v
-        else                                                      d[ k ] =              v
+        if ( v = d[ k ] )? and ( ( typeof v ) is 'object' ) and ( not frozen v )
+          if is_first and ( frozen d )
+            is_first  = false
+            d         = deep_copy d
+          d[ k ] = deep_freeze v
       return shallow_freeze d
     when '[object Object]'
       for k, v of d
-        if v? and ( ( typeof v ) is 'object' ) then d[ k ] = deep_freeze  v
-        else                                        d[ k ] =              v
+        if v? and ( ( typeof v ) is 'object' ) and ( not frozen v )
+          if is_first and ( frozen d )
+            is_first  = false
+            d         = deep_copy d
+          d[ k ] = deep_freeze v
       return shallow_freeze d
   return d
 
