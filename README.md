@@ -326,4 +326,4 @@ of the performance that you'd get with naive copying.
   (https://blog.mattbierner.com/persistent-hash-tries-in-javavascript/, https://github.com/mattbierner/hamt,
   https://github.com/mattbierner/hamt_plus (? https://github.com/mattbierner/hashtrie)) for the frequent use
   case of immutable maps
-
+* [ ] consider to optionally detect multiple object instances, circular references
