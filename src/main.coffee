@@ -77,6 +77,8 @@ freeze_lets.set       = ( me, k, v  ) ->
   R       = shallow_copy me
   R[ k ]  = v
   return shallow_freeze R
+freeze_lets._deep_copy    = deep_copy
+freeze_lets._deep_freeze  = deep_freeze
 
 
 #===========================================================================================================
@@ -98,7 +100,8 @@ nofreeze_lets.set     = ( me, k, v  ) ->
   R       = shallow_copy me
   R[ k ]  = v
   return R
-
+nofreeze_lets._deep_copy    = deep_copy
+nofreeze_lets._deep_freeze  = deep_freeze
 
 #===========================================================================================================
 #
